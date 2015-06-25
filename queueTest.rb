@@ -7,7 +7,7 @@ require 'json'
 
 @db_host = 'localhost'
 @db_user = 'root'
-@db_pass = 'laJ1Bu3E'
+@db_pass = ENV['MYSQL_PASS']
 @db_name = 'test'
 
 # Connect to the database
