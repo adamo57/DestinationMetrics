@@ -7,7 +7,7 @@ require 'json'
 
 @db_host = 'localhost'
 @db_user = 'root'
-@db_pass = 'pass'
+@db_pass = 'password'
 @db_name = 'test'
 @db = Mysql2::Client.new(:host => @db_host, :username => @db_user, :password => @db_pass, :database => @db_name)
 
@@ -65,7 +65,7 @@ while(true)
 	loc_mac_time_nil = nil
 
 	#Connect to the queue
-	AWS.config(:access_key_id => 'access', :secret_access_key => 'pass')
+	AWS.config(:access_key_id => 'access_key_id', :secret_access_key => 'secret_access_key')
 	sqs = AWS::SQS.new
 	url = "https://sqs.us-east-1.amazonaws.com/308871452314/destination-metrics-dummy"
 	queue = sqs.queues[url]
@@ -204,40 +204,39 @@ while(true)
 				end
 
 				#END TIME needs to be the captured datetime from tshark
-				##Make besuch 'besuch_blacklist' once we get a blacklist together
-				@db.query("
-					INSERT INTO BESUCH (DEVICE_ID, MAC_PREFIX, LOC_NAME, START_TIME, END_TIME, COUNT, MIN_SIGNAL, MAX_SIGNAL)
-					 VALUES ('#{device_id}', '#{mac_prefix}', '#{location_name}', '#{start_time}', '#{end_time}', '#{count}', '#{min_signal}', '#{max_signal}')")
-				puts "
-					INSERT INTO BESUCH (DEVICE_ID, MAC_PREFIX, LOC_NAME, START_TIME, END_TIME, COUNT, MIN_SIGNAL, MAX_SIGNAL)
-					VALUES (#{device_id}, #{mac_prefix}, #{location_name}, #{start_time}, #{end_time}, #{count}, #{min_signal}, #{max_signal})"
+
 					
 				if @db.query("select device_id from besuch where device_id like '#{device_id}'") != FALSE #if mac_address is not found is black list then => 
-				 id = @db.query("
-				 	select exists(
-					             select besuch_id 
-					             from besuch
-					             where device_id = '#{device_id}'
-					             order by end_time ASC
-					         )				 		
-				 	from besuch
-				 ")
-				 puts "
-				 	select exists(
-					             select besuch_id 
-					             from besuch
-					             where device_id = '#{device_id}'
-					             order by end_time ASC
-					         )				 		
-				 	from besuch
-				 "
+					##Make besuch 'besuch_blacklist' once we get a blacklist together
+					@db.query("
+						INSERT INTO BESUCH (DEVICE_ID, MAC_PREFIX, LOC_NAME, START_TIME, END_TIME, COUNT, MIN_SIGNAL, MAX_SIGNAL)
+						 VALUES ('#{device_id}', '#{mac_prefix}', '#{location_name}', '#{start_time}', '#{end_time}', '#{count}', '#{min_signal}', '#{max_signal}')")
+					puts "
+						INSERT INTO BESUCH (DEVICE_ID, MAC_PREFIX, LOC_NAME, START_TIME, END_TIME, COUNT, MIN_SIGNAL, MAX_SIGNAL)
+						VALUES (#{device_id}, #{mac_prefix}, #{location_name}, #{start_time}, #{end_time}, #{count}, #{min_signal}, #{max_signal})"
+					 id = @db.query("
+					 	select count(*) 
+					 	from besuch 
+					 	where 1 = 1
+					 	and device_id = '#{device_id}'
+					 	order by end_time ASC
+					 ")
+					 id.each do |found|
+					 	val = found.fetch("count(*)")
+					 	if val > 1
+					 	then
+					 	    @db.query("
+					 	    	update besuch 
+					 	        set end_time = '#{end_time}'
+					 	    	where device_id = '#{device_id}'")
+					 	    puts "
+					 	    	update besuch 
+					 	        set end_time = '#{end_time}'
+					 	    	where device_id = '#{device_id}'"
+					 	end
+					 end
 
-				 if id == "NIL"
-				 then
-				     @db.query("update table besuch 
-				         set end_time = '#{end_time}'
-				     where besuch_id = id")
-				 end
+
 				end
 		end
 	end
