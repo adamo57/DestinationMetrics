@@ -1,3 +1,3 @@
 require 'daemons'
 
-Daemons.run('queueTest.rb')
+Daemons.run("queueTest.rb")
