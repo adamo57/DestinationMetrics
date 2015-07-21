@@ -5,8 +5,10 @@ require 'digest'
 require 'text-table'
 require 'json'
 require 'daemons'
+require 'yaml'
 
 loop do
+  CONFIG = Yaml.load_file("config.yml") unless defined? CONFIG
   @db_host = 'localhost'
   @db_user = 'root'
   @db_pass = ''
