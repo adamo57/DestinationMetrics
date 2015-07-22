@@ -39,6 +39,9 @@ from that probe request.
 `` mv ./launcher.sh ~ ``  
 `` cd ~ ``  
 
+### Run Bundle Install
+`` bundle install ``
+
 ### Make launcher.sh executable
 `` sudo chmod 775 launcher.sh ``
 

@@ -2,6 +2,7 @@ require 'aws-sdk-v1'
 require 'mysql2'
 require 'date'
 require 'digest'
+require 'openssl'
 require 'text-table'
 require 'json'
 require 'daemons'
@@ -38,17 +39,13 @@ loop do
 
   def checkSameDay(addr, date)
   	ret = false
-  	count = @db.query("SELECT COUNT(*) FROM BESUCH WHERE START_TIME=#{visit_time} && DEVICE_MAC =#{mac_addr}")
+  	count = @db.query("SELECT COUNT(*) FROM BESUCH WHERE VISIT_DATE=#{visit_time} && DEVICE_MAC =#{mac_addr}")
   	if (count == 0)
   		ret = false
   	else
   		ret = true
   	end
   	return ret
-  end
-
-  def iso8601_to_mysql_datetime(date)
-    DateTime.parse(date).to_time.strftime("%F %T")
   end
 
   # Connect to the database
@@ -72,8 +69,6 @@ loop do
   url = ENV['sqs-url']
   queue = sqs.queues[url]
 
-  system "clear" or system "cls"
-
   raw_data = Array.new
   messages_arr = Array.new
 
@@ -83,7 +78,7 @@ loop do
   else
   	results.each do |row|
   		visit_id_fix = row['VISIT_ID'] #Stored as int
-  		mac_addr = row['DEVICE_MAC'] #Stored as array (use .to_a)
+  		mac_addr = Digest::SHA256.hexdigest "row['DEVICE_MAC']" #Stored as array (use .to_a)
   		location_id_fix = row['LOCATION_ID'] #Stored as int
   		visit_time = row['VISIT_TIME'] #Stored as a new datetime (use .to_datetime)
   		mac_time_nil = row['MAC_Time'] #Stored as new datetime?
@@ -102,7 +97,6 @@ loop do
   	# Send the data obtained in a message to the queue
   	msgs = queue.batch_send(raw_data)
   	puts "Sent all of the messages"
-  	#sleep(10)
 
   	#Read data from the queue
   	recieved_message = queue.receive_messages(wait_time_seconds: 15, num_messages: 10, visibility_timeout: 10)
@@ -116,17 +110,11 @@ loop do
 
   	puts "Got all of the messages\n"
   	#Clear the database first
-  	#puts "Dropping table...."
-  	#sleep(10)
-
-
-    @db.query("DROP TABLE BESUCH")
+    #@db.query("DROP TABLE BESUCH")
   	#puts "Dropped."
 
   	messages_arr.each do |raw|
   		#Scrub Scrub Scrub
-  			#...
-  		#Should we send out a new message to a different queue?
   		#Anyways, we are going to put the new 'scrubbed' data into a new table
   		raw_arr = raw.split(',')
   		mac_addr = raw_arr[1].rchomp('"').chomp('"')
@@ -160,19 +148,16 @@ loop do
       #USING BTREE")
 
   			#DEVICE_ID
-  			# INSERT if doesnt already exist. else ignore
-  			device_id = Digest::SHA256.hexdigest "#{mac_addr}"
+  			device_id = mac_addr
   			puts "device_id: #{device_id}"
 
 
   			#DEVICE_MAC
-  			# INSERT if doesnt already exist. else ignore
   			mac_addr_tmp = mac_addr.split(':')
   			mac_prefix = [mac_addr_tmp[0], mac_addr_tmp[1], mac_addr_tmp[2]].join(":")
   			puts "mac_prefix: #{mac_prefix}"
 
   			#LOCATION_ID
-  			# If it doesn't exist, INSERT, otherwise, UPDATE
   			location_name = findLocation(location_id_fix.to_i)
   			puts "location_name: #{location_name}"
 
@@ -189,36 +174,20 @@ loop do
 
   			#everytime there is a new ping to the device on the same day, update the end time to the current time
 
-  			# If it doesn't exist, INSERT, otherwise, UPDATE
-
       end_time = start_time
   			puts "end_time: #{end_time}"
 
   			#COUNT
   			#Every time a new ping of the same device occurs, increment the count val
 
-  			# If it doesn't exist, INSERT, otherwise, UPDATE
   			count = 1
   			#if new ping occurs
   			# => count += 1
   			puts "count: #{count}"
 
-  			#MAX_SIGNAL / MIN_SIGNAL
-  			#Every time a new ping occurs, the current max and min signal strength will be tested against
-  			#the signal strength passed in, and if it is higher than the max, or lower than the min
-  			#update accordingly
-
-  			max_signal = 0
-  			min_signal = 0
-  			mac_time = mac_time_nil.to_i
-
-  			if mac_time > max_signal
-  				max_signal = mac_time
-  			elsif mac_time < min_signal
-  				min_signal = mac_time
-  			end
-
-  			#END TIME needs to be the captured datetime from tshark
+        # BLACKLISTING
+        ## Will change depending on clients needs
+        ## example of MASS MoCA
 
 
         @db.query("INSERT INTO BESUCH
