@@ -5,14 +5,13 @@ require 'digest'
 require 'text-table'
 require 'json'
 require 'daemons'
-require 'yaml'
+require './environment'
 
 loop do
-  CONFIG = Yaml.load_file("config.yml") unless defined? CONFIG
-  @db_host = 'localhost'
-  @db_user = 'root'
-  @db_pass = ''
-  @db_name = 'test'
+  @db_host = ENV['db_host']
+  @db_user = ENV['db_user']
+  @db_pass = ENV['db_pass']
+  @db_name = ENV['db_name']
   @db = Mysql2::Client.new(:host => @db_host, :username => @db_user, :password => @db_pass, :database => @db_name)
 
   @runThrough = 0
@@ -68,9 +67,9 @@ loop do
   loc_mac_time_nil = nil
 
   #Connect to the queue
-  AWS.config(:access_key_id => '', :secret_access_key => '')
+  AWS.config(:access_key_id => ENV['access_key_id'], :secret_access_key => ENV['secret_access_key'])
   sqs = AWS::SQS.new
-  url = "https://sqs.us-east-1.amazonaws.com/308871452314/destination-metrics-dummy"
+  url = ENV['sqs-url']
   queue = sqs.queues[url]
 
   system "clear" or system "cls"

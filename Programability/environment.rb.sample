@@ -1,0 +1,9 @@
+#Database config
+ENV['db_user'] = ''
+ENV['db_password'] = ''
+ENV['db_name'] = ''
+
+#SQS config
+ENV['access_key_id'] = ''
+ENV['secret_access_key'] = ''
+ENV['sqs-url'] = ''

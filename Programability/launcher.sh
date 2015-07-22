@@ -3,5 +3,5 @@
 
 cd /
 cd home/pi/DestinationMetricsLLC/Programability
-sudo ruby queueTest_control.rb start
+sudo ruby connector_control.rb start
 cd /
