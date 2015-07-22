@@ -1,6 +1,7 @@
 # **DESTINATION METRICS**
 
-[Lever Inc.](http://www.leverinc.org) ![leverinc](http://leverinc.org/lever/new-lever-logos/bannerLogoPNG.png)
+![leverinc](http://leverinc.org/lever/new-lever-logos/bannerLogoPNG.png)  
+[Lever Inc.](http://www.leverinc.org)  
 
 ## **Introduction**
 
