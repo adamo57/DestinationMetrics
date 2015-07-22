@@ -1,6 +1,6 @@
 # **DESTINATION METRICS**
 
-[Lever Inc.](http://www.leverinc.org)
+[Lever Inc.](http://www.leverinc.org) ![leverinc](https://media.licdn.com/mpr/mpr/shrink_200_200/p/1/005/077/3a0/31f6105.png)
 
 ## **Introduction**
 
