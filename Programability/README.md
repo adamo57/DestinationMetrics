@@ -30,4 +30,16 @@ from that probe request.
 
 # **Setup**
 
-## ****
+### Clone The Repository
+`` `git clone https://github.com/adamo57/DestinationMetrics.git` ``
+
+### Move The Launcher to root
+`` `cd DestinationMetrics/Programability/` ``
+`` `mv ./launcher.sh ~` ``
+`` `cd ~` ``
+
+### Make launcher.sh executable
+`` `sudo chmod 775 launcher.sh` ``
+
+### Run the Launcher
+`` `./launcher.sh` ``

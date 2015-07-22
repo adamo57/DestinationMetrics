@@ -10,7 +10,7 @@ require './environment'
 loop do
   @db_host = ENV['db_host']
   @db_user = ENV['db_user']
-  @db_pass = ENV['db_pass']
+  @db_pass = ENV['db_password']
   @db_name = ENV['db_name']
   @db = Mysql2::Client.new(:host => @db_host, :username => @db_user, :password => @db_pass, :database => @db_name)
 
