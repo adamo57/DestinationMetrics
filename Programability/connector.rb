@@ -1,9 +1,8 @@
 require 'aws-sdk-v1'
 require 'mysql2'
 require 'date'
-require 'digest'
 require 'openssl'
-require 'text-table'
+require 'digest/sha1'
 require 'json'
 require 'daemons'
 require './environment'
@@ -17,6 +16,10 @@ loop do
 
   @runThrough = 0
   @offset = 10
+
+  # create the cipher for encrypting
+  @cipher = OpenSSL::Cipher::Cipher.new("aes-256-cbc")
+  @cipher.encrypt
 
   class String
     def rchomp(sep = $/)
