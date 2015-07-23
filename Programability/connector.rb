@@ -7,6 +7,8 @@ require 'json'
 require 'daemons'
 require './environment'
 
+Encoding.default_external = Encoding::UTF_8
+
 loop do
   @db_host = ENV['db_host']
   @db_user = ENV['db_user']
@@ -20,6 +22,14 @@ loop do
   # create the cipher for encrypting
   @cipher = OpenSSL::Cipher::Cipher.new("aes-256-cbc")
   @cipher.encrypt
+
+  # you will need to store these for later, in order to decrypt your data
+  key = Digest::SHA1.hexdigest("yourpass")
+  iv = @cipher.random_iv
+
+  # load them into the cipher
+  @cipher.key = key
+  @cipher.iv = iv
 
   class String
     def rchomp(sep = $/)
@@ -72,7 +82,7 @@ loop do
   url = ENV['sqs-url']
   queue = sqs.queues[url]
 
-  raw_data = Array.new
+  encrypted_data = Array.new
   messages_arr = Array.new
 
   #Pull info from the VISITS TABLE in database
@@ -81,7 +91,9 @@ loop do
   else
   	results.each do |row|
   		visit_id_fix = row['VISIT_ID'] #Stored as int
-  		mac_addr = Digest::SHA256.hexdigest "row['DEVICE_MAC']" #Stored as array (use .to_a)
+  		mac_addr = row['DEVICE_MAC'] #Stored as array (use .to_a)
+      encrypted_MAC = @cipher.update("#{mac_addr}") #Encrypt the MAC Addresses for some reason
+      encrypted_MAC.force_encoding('ISO-8859-1')
   		location_id_fix = row['LOCATION_ID'] #Stored as int
   		visit_time = row['VISIT_TIME'] #Stored as a new datetime (use .to_datetime)
   		mac_time_nil = row['MAC_Time'] #Stored as new datetime?
@@ -90,15 +102,17 @@ loop do
 
   		#Raw data dump
   		puts "\nVISIT_ID\tDEVICE_MAC\tLOCATION_ID\tVISIT_TIME\tMAC_Time\tLoc_MAC_Time"
-  		puts "#{visit_id_fix},\t #{mac_addr},\t #{location_id_fix},\t #{visit_time},\t #{mac_time_nil},\t #{loc_mac_time_nil}\n\n"
+  		puts "#{visit_id_fix},\t #{encrypted_MAC},\t #{location_id_fix},\t #{visit_time},\t #{mac_time_nil},\t #{loc_mac_time_nil}\n\n"
 
-  		raw_row = ["#{visit_id_fix}", "#{mac_addr}", "#{location_id_fix}", "#{visit_time}", "#{mac_time_nil}", "#{loc_mac_time_nil}"]
-  		raw_json = raw_row.to_json
-  		raw_data.push(raw_json)
+  		raw_row = ["#{visit_id_fix}", "#{encrypted_MAC}", "#{location_id_fix}", "#{visit_time}", "#{mac_time_nil}", "#{loc_mac_time_nil}"]
+  		encrypted_json = raw_row.to_json
+      puts "#{encrypted_json}"
+  		encrypted_data.push(encrypted_json)
   	end
 
   	# Send the data obtained in a message to the queue
-  	msgs = queue.batch_send(raw_data)
+
+  	msgs = queue.batch_send(encrypted_data)
   	puts "Sent all of the messages"
 
   	#Read data from the queue
