@@ -1,0 +1,235 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="utf-8">
+    <title>JSON Line Graph</title>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+        <style type="text/css">
+            .axis path,
+            .axis line
+            {
+                fill: none;
+                stroke: black;
+                shape-rendering: crispEdges;
+            }
+            .axis text
+            {
+                font-family: sans-serif;
+                font-size: 11px;
+                font-color: #000;
+            }
+            .line
+            {
+                fill: none;
+                stroke-width: 2px;
+            }
+            .legend
+            {
+                font-family: sans-serif;
+                font-size: 11px;
+                font-color: #000;
+            }
+            .tooltip
+            {
+              position: absolute;
+              pointer-events: none;
+              font-family: sans-serif;
+              font-size: 11px;
+              background-color: white;
+              background-opacity: .5;
+              padding: 3px;
+            }
+            .dot
+            {
+
+            }
+            .id1
+            {
+
+            }
+            .id2
+            {
+
+            }
+            .id3
+            {
+
+            }
+        </style>
+    </head>
+    <body>
+        <script type="text/javascript">
+            
+            var w = 1550,
+                h = 600,
+                padding = 50;
+
+            var formatTime = d3.time.format("%b %e");
+
+            var svg = d3.select("body")
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h);
+
+            d3.json("june_data.php", function(error, data) {
+                data.forEach(function(d) {
+                    d.LOCATION = d.LOCATION;
+                    d.DATE = new Date(d.DATE);
+                    d.COUNT = d.COUNT;
+                });
+
+            var minDate = d3.min(data,function(d) {return d.DATE;});
+            var maxDate = d3.max(data,function(d) {return d.DATE;});
+
+            var xScale = d3.time.scale()
+                .domain([minDate, maxDate])
+                .range([padding, w - padding * 2]);
+
+            var yScale = d3.scale.linear()
+                .domain([0,d3.max(data,function(d) {
+                                return +d.COUNT;
+                            })])
+                .range([h - padding, padding]);
+
+            var xAxis = d3.svg.axis()
+                .orient("bottom")
+                .scale(xScale)
+                .ticks(d3.time.day.utc, 1)
+                .tickSize(10)
+                .tickFormat(d3.time.format.utc('%b %e'));
+                
+            var yAxis = d3.svg.axis()
+                .orient("left")
+                .scale(yScale);
+
+            var dataGroup = d3.nest()
+                .key(function(d) {
+                    return d.LOCATION;
+                })
+                .entries(data);
+
+            var lineGen = d3.svg.line()
+                .x(function(d){
+                        return xScale(d.DATE);
+                })
+                .y(function(d){
+                        return yScale(d.COUNT);
+                })
+                .interpolate("linear");
+
+            var color = d3.scale.category10();
+
+            var tooltip = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
+            var legend = svg.append("g")
+                .attr("class", "legend")
+                .attr("height", 100)
+                .attr("width", 100)
+                .attr("transform", "translate(-" + (w - 125) + ",50)");
+
+
+            dataGroup.forEach(function(d, i) {
+                svg.append('svg:path')
+                    .style("stroke", function()
+                    { 
+                        return d.color = color(d.key);
+                    })
+                    .attr('stroke-width', 2)
+                    .attr('fill', 'none')
+                    .attr("class", function()
+                    {
+                        if(d.key == "Lever Office, North Adams")
+                        {
+                            return "id1";
+                        }
+                        if(d.key == "MASS MoCa, North Adams")
+                        {
+                            return "id2";
+                        }
+                        if(d.key == "Spring Street, Williamstown")
+                        {
+                            return "id3";
+                        }
+                    })
+                    .attr("id", 'tag'+d.key.replace(/\s+/g, '')) // assign ID
+                    .attr('d', lineGen(d.values));
+
+                legend.append("rect")
+                    .attr("x", w - 65)
+                    .attr("y", (i * 20) - 10)
+                    .attr("width", 10)
+                    .attr("height", 10)
+                    .style("fill", function()
+                    {
+                        return d.color = color(d.key);
+                    });
+
+                legend.append("text")
+                    .attr("x", w - 52)
+                    .attr("y", i * 20)
+                    .text(d.key)
+                    .on("click", function(){
+                        var active = d.active ? false : true;
+                        var newOpacity = active ? 0 : 1;
+                        d3.select(".id" + (i + 1))
+                            .transition().duration(100) 
+                            .style("opacity", newOpacity); 
+                        d.active = active;
+                    });
+                });
+
+            
+                svg.selectAll("dot")
+                .data(data)
+                .enter()
+                .append("circle")
+                .attr("class", function(d)
+                    {if(d.LOCATION == "Lever Office, North Adams"){return "id1";}
+                    if(d.LOCATION == "MASS MoCa, North Adams"){return "id2";}
+                    if(d.LOCATION == "Spring Street, Williamstown"){return "id3";}
+                    })
+                .style("fill", "white")
+                .attr("stroke", "black")
+                .attr("cx", function(d) {
+                    return xScale(d.DATE);
+                })
+                .attr("cy", function (d) {
+                    return yScale(d.COUNT);
+                })
+                .attr("r", 3)
+                .on("mouseover", function(d) {
+                    tooltip.transition()
+                       .duration(400)
+                        .style("opacity", .9);
+                    tooltip.html(formatTime(d.DATE) + ": " + d.COUNT)
+                       .style("left", d3.event.x + "px")
+                       .style("top", d3.event.y - 15 + "px");
+                    })
+                .on("mouseout", function(d) {
+                    tooltip.transition()
+                       .duration(1000)
+                       .style("opacity", 0);
+                       });
+
+            svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(" + padding + ",0)")
+                .call(yAxis);
+
+            svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(0," + (h - padding) + ")")
+                .call(xAxis)
+                .selectAll("text")  
+                    .style("text-anchor", "end")
+                    .attr("dx", "-.8em")
+                    .attr("dy", ".15em")
+                    .attr("transform", function(d) {
+                        return "rotate(-65)" 
+                    });     
+            });
+        </script>
+    </body>
+</html>

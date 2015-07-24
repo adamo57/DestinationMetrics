@@ -1,0 +1,50 @@
+body
+{
+    font-family: arial;
+}
+.axis path,
+.axis line
+{
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+.axis text
+{
+    font-size: 11px;
+    font-color: #000;
+}
+.dline
+{
+    fill: none;
+    stroke-width: 2px;
+}
+.legend
+{
+    font-family: sans-serif;
+    font-size: 11px;
+    font-color: #000;
+}
+.tooltip
+{
+  position: absolute;
+  pointer-events: none;
+  font-family: sans-serif;
+  font-size: 11px;
+  background-color: white;
+  background-opacity: .5;
+  padding: 3px;
+}
+.dot
+{
+    fill: white;
+    stroke-width: 1px;
+}
+.id1{}
+.id2{}
+.id3{}
+
+.col-md-6
+{
+	border: 1px solid black;
+}
