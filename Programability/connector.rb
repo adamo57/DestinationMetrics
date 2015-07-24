@@ -168,7 +168,6 @@ loop do
   			device_id = mac_addr
   			puts "device_id: #{device_id}"
 
-
   			#DEVICE_MAC
   			mac_addr_tmp = mac_addr.split(':')
   			mac_prefix = [mac_addr_tmp[0], mac_addr_tmp[1], mac_addr_tmp[2]].join(":")
