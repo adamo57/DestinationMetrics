@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Sankey Diagram</title>
+<style>
+body
+{
+  font-family: arial;
+  text-align: center;
+}
+
+.node rect {
+  cursor: move;
+  fill-opacity: .9;
+  shape-rendering: crispEdges;
+}
+
+.node text {
+  pointer-events: none;
+  text-shadow: 0 1px 0 #fff;
+}
+
+.sankey-container {
+    width: 100%;
+    max-width: 840px;
+    font-size: 16px;
+}
+
+.link {
+  fill: none;
+  stroke: #000;
+  stroke-opacity: .2;
+}
+
+.link:hover {
+  stroke-opacity: .5;
+}
+.navigator .data {
+    fill: lightgrey;
+    stroke-width: 0px;
+}
+
+.navigator .line {
+    fill: none;
+    stroke: darkgrey;
+    stroke-width: 1px;
+}
+
+.handle {
+    stroke: red;
+    stroke-width: 4px;
+    opacity: 0.5;
+    }
+
+body {
+    font-family: 'MuseoSans', 'Lato', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    margin: 0;
+    // font-weight: 300;
+}
+
+.label {
+text-align: center;
+margin-left: auto;
+    margin-right: auto;
+position: relative;
+}
+
+</style>
+<body>
+<h2>Movement Between DM Locations</h2>
+<h3>January 1, 2015 - June 30, 2015</h3>
+    <div class="sankey">
+    </div>
+    <div class="navchart">
+    </div>
+<div class="label" ><span id="nRadius-value"></span>
+</div>
+
+
+
+    <div class="hover-tooltip-sankey">
+      <div class="hover-title">
+        <span class="hover-name"></span><span class="hover-name-pct"></span>
+      </div>
+    </div>
+
+   <!-- <div class="link-hover">
+      <div class="link-hover-text"> This connection represents <span class="link-source-pct"></span> of the selected portfolio and is the amount invested in <span class="link-target-name"></span> from the <span class="link-source-name"></span> asset&nbsp;class.</div>
+    </div>
+    
+    </div>
+-->
+  </div>    
+
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="abs-sankey.js"></script>
+<script src="flow4.js"></script>
+
+</body>

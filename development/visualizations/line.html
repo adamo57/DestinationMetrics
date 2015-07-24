@@ -1,0 +1,241 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="utf-8">
+    <title>Line Graph</title>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+        <style type="text/css">
+            body{
+                font-family: arial;
+            }
+            .axis path,
+            .axis line
+            {
+                fill: none;
+                stroke: black;
+                shape-rendering: crispEdges;
+            }
+            .axis text
+            {
+                font-family: sans-serif;
+                font-size: 11px;
+                font-color: #000;
+            }
+            .dline
+            {
+                fill: none;
+                stroke-width: 2px;
+            }
+            .legend
+            {
+                font-family: sans-serif;
+                font-size: 11px;
+                font-color: #000;
+            }
+            .tooltip
+            {
+              position: absolute;
+              pointer-events: none;
+              font-family: sans-serif;
+              font-size: 11px;
+              background-color: white;
+              background-opacity: .5;
+              padding: 3px;
+            }
+            .dot
+            {
+                fill: white;
+                stroke-width: 1px;
+            }
+            .id1{}
+            .id2{}
+            .id3{}
+        </style>
+    </head>
+    <body>
+        <h2>Daily Count of Unique Visitors to MASS MoCA</h2>
+        <h3>January 1, 2015 - June 30, 2015</h3>
+        <div id="graph">
+        <script type="text/javascript">
+            
+            var w = 1550,
+                h = 600,
+                padding = 50;
+
+            var formatTime = d3.time.format("%b %d");
+            var formatCount = d3.format("0,000");
+
+            d3.json("line_data.php", function(error, data) {
+                data.forEach(function(d) {
+                    d.LOCATION = d.LOCATION;
+                    d.DATE = new Date(d.DATE);
+                    d.COUNT = d.COUNT;
+                });
+
+            var minDate = d3.min(data,function(d) {return d.DATE;});
+            var maxDate = d3.max(data,function(d) {return d.DATE;});
+
+            var xScale = d3.time.scale()
+                .domain(d3.extent(data, function (d) {
+                    return d.DATE;
+                }))
+                .range([padding, w - padding * 2]);
+
+            var yScale = d3.scale.linear()
+                .domain(d3.extent(data, function (d) {
+                    return +d.COUNT;
+                }))
+                .range([h - padding, padding]);
+
+            var svg = d3.select("#graph")
+                .append("svg")
+                .attr("width", w)
+                .attr("height", h)
+                .append("svg:g");
+
+            var xAxis = d3.svg.axis()
+                .orient("bottom")
+                .scale(xScale)
+                .ticks(d3.time.month, 1)
+                .tickSize(10)
+                .tickFormat(d3.time.format('%b'));
+                
+            var yAxis = d3.svg.axis()
+                .orient("left")
+                .scale(yScale);
+
+            var dataGroup = d3.nest()
+                .key(function(d) {
+                    return d.LOCATION;
+                })
+                .entries(data);
+
+            var lineGen = d3.svg.line()
+                .x(function(d){
+                        return xScale(d.DATE);
+                })
+                .y(function(d){
+                        return yScale(d.COUNT);
+                })
+                .interpolate("linear");
+
+            var color = d3.scale.category10();
+
+            var tooltip = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
+            var legend = svg.append("g")
+                .attr("class", "legend")
+                .attr("height", 100)
+                .attr("width", 100)
+                .attr("transform", "translate(-" + (w - 125) + ",50)");
+
+            dataGroup.forEach(function(d, i) {
+                drawLine(d);
+                drawDots(d);
+                legend.append("rect")
+                    .attr("x", w - 65)
+                    .attr("y", (i * 20) - 10)
+                    .attr("width", 10)
+                    .attr("height", 10)
+                    .style("fill", function()
+                    {
+                        return d.color = color(d.key);
+                    });
+
+                legend.append("text")
+                    .attr("x", w - 52)
+                    .attr("y", i * 20)
+                    .text(d.key)
+                    .on("click", function(){
+                        var active = d.active ? false : true;
+                        var newOpacity = active ? 0 : 1;
+                        d3.selectAll(".id" + (i + 1))
+                            .transition().duration(400) 
+                            .style("opacity", newOpacity); 
+                        d.active = active;
+                    });
+                });
+
+            svg.append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate(" + padding + ",0)")
+                .call(yAxis)
+                .append("text")
+                  .attr("transform", "rotate(-90)")
+                  .attr("y", 6)
+                  .attr("x", -(h / 2) + padding)
+                  .attr("dy", ".71em")
+                  .style("text-anchor", "end")
+                  .text("# of Unique Visitors");
+
+            svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + (h - padding) + ")")
+                .call(xAxis)
+                .selectAll("text")  
+                    .style("text-anchor", "end")
+                    .attr("dx", "-.8em")
+                    .attr("dy", ".15em")
+                    .attr("transform", function(d) {
+                        return "rotate(-65)" 
+                    });
+                    
+            function drawLine(d)
+            {
+                svg.append('svg:path')
+                    .style("stroke", function()
+                    { 
+                        return d.color = color(d.key);
+                    })
+                    .attr('stroke-width', 2)
+                    .attr('fill', 'none')
+                    .attr("class", function()
+                    {
+                        if(d.key == "Lever Office, North Adams"){return "id3";}
+                        if(d.key == "MASS MoCa, North Adams"){return "id1";}
+                        if(d.key == "Spring Street, Williamstown"){return "id2";}
+                    })
+                    .attr('d', lineGen(d.values));
+            }
+
+            function drawDots(d)
+            {
+                svg.selectAll("dot")
+                .data(data)
+                .enter()
+                .append("circle")
+                .attr("class", function(d)
+                    {if(d.LOCATION == "Lever Office, North Adams"){return "id3";}
+                    if(d.LOCATION == "MASS MoCa, North Adams"){return "id1";}
+                    if(d.LOCATION == "Spring Street, Williamstown"){return "id2";}
+                    })
+                .style("fill", "white")
+                .attr("stroke", "black")
+                .attr("cx", function(d) {
+                    return xScale(d.DATE);
+                })
+                .attr("cy", function (d) {
+                    return yScale(d.COUNT);
+                })
+                .attr("r", 2)
+                .on("mouseover", function(d) {
+                    tooltip.transition()
+                       .duration(400)
+                        .style("opacity", .9);
+                    tooltip.html(formatTime((d3.time.day.offset(d.DATE, +1))) + ": " + formatCount(d.COUNT))
+                       .style("left", d3.event.x + "px")
+                       .style("top", d3.event.y - 15 + "px"); 
+                    })
+                .on("mouseout", function(d) {
+                    tooltip.transition()
+                       .duration(1000)
+                       .style("opacity", 0);
+                       });
+            }
+            });
+        </script>
+    </div>
+    </body>
+</html>

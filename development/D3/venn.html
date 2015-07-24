@@ -1,0 +1,120 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="utf-8">
+	<title>Venn</title>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+        <style type="text/css">
+        	.label
+        	{
+        		font-family: sans-serif;
+        		font-size: 12px;
+        	}
+        </style>
+    <body>
+    	<script type="text/javascript">
+    	var h = 450;    	
+    	var w = 500;  
+    	var r = 100;  	
+    	
+    	var padding = 60;
+    	var xcenter = w / 2;
+    	var ycenter = h / 2;
+
+    	var svg = d3.select("body")
+    		.append("svg")
+    		.attr("width", w)
+    		.attr("height", h);
+
+    	svg.append("circle")
+		    .attr("cx", xcenter - padding)
+		    .attr("cy", ycenter - padding)
+		    .attr("r", r)
+		    .style("fill", "brown")
+		    .style("fill-opacity", ".5");
+
+		svg.append("circle")
+		    .attr("cx", xcenter + padding)
+		    .attr("cy", ycenter - padding)
+		    .attr("r", r)
+		    .style("fill", "steelblue")
+		    .style("fill-opacity", ".5");
+		 
+		svg.append("circle")
+		    .attr("cx", xcenter)
+		    .attr("cy", ycenter + padding)
+		    .attr("r", r)
+		    .style("fill", "green")
+		    .style("fill-opacity", ".5");
+
+		svg.append("text")
+			.attr("class", "label")
+		    .text("MASS MoCA")
+		    .attr("x", r + padding)
+		    .attr("y", r - padding + 20);
+
+		svg.append("text")
+			.attr("class", "label")
+		    .text("Lever Office")
+		    .attr("x", h - padding - r)
+		    .attr("y", r - padding + 20);
+
+		svg.append("text")
+			.attr("class", "label")
+			.text("Spring Street")
+			.attr("x", xcenter - 30)
+		    .attr("y", h - padding + 10);
+
+		svg.append("text")
+			.attr("class", "label")
+			.text("10")
+			.attr("x", xcenter - padding - 10)
+			.attr("y", ycenter - padding);
+
+		svg.append("text")
+			.attr("class", "label")
+			.text("30")
+			.attr("x", xcenter + padding + 10)
+			.attr("y", ycenter - padding);
+
+		svg.append("text")
+			.attr("class", "label")
+			.text("50")
+			.attr("x", xcenter)
+			.attr("y", ycenter + padding);
+
+		svg.append("text")
+			.attr("class", "label")
+			.text("30")
+			.attr("x", xcenter)
+			.attr("y", ycenter - padding);
+
+		svg.append("text")
+			.attr("class", "label")
+			.text("20")
+			.attr("x", xcenter - padding)
+			.attr("y", ycenter + 10);
+
+		svg.append("text")
+			.attr("class", "label")
+			.text("10")
+			.attr("x", xcenter + padding - 10)
+			.attr("y", ycenter + 10);
+
+		svg.append("text")
+			.attr("class", "label")
+			.text("5")
+			.attr("x", xcenter - 2)
+			.attr("y", ycenter - 5);
+/*
+		svg.append("text")
+			.attr("class", "label")
+			.text("")
+			.attr("x", )
+			.attr("y", );
+*/
+		
+
+    	</script>
+    </body>
+</html>
