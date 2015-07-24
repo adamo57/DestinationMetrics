@@ -34,11 +34,12 @@
         //mysqli_query($db_handle, "DELETE FROM JUNE_SUPERCLEAN") or die(mysql_error());
         //mysqli_query($db_handle, "ALTER TABLE JUNE_SUPERCLEAN AUTO_INCREMENT = 1") or die(mysql_error());
         
-        echo "beginning...<br>";
+        echo "beginning...";
         $select = "
 
-            SELECT * FROM past WHERE CAST(VISIT_TIME AS DATE)='2015-01-29' && 
-            CAST(VISIT_TIME AS TIME) >= '00:00:00' && CAST(VISIT_TIME AS TIME) < '12:00:00'
+            SELECT * FROM past WHERE CAST(VISIT_TIME AS DATE)='2015-06-28' && 
+            CAST(VISIT_TIME AS TIME) >= '18:00:00' && CAST(VISIT_TIME AS TIME) < '24:00:00' &&
+            LOCATION_ID=202481601997564
 
         ";
         $load_data = mysqli_query($db_handle, $select);
@@ -78,7 +79,7 @@
         }
 
         echo "upserting... \n";
-        $ins = "INSERT INTO past_clean " . implode(',', $into) . " VALUES " . implode(',', $values) . implode(' ', $key);
+        $ins = "INSERT INTO wilco " . implode(',', $into) . " VALUES " . implode(',', $values) . implode(' ', $key);
 
         //echo $ins . "<br>";
         mysqli_query($db_handle, $ins) or die(mysqli_error($db_handle));
