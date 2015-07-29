@@ -61,6 +61,13 @@ loop do
   	return ret
   end
 
+  def blacklist(addr)
+    @db.query("
+      INSERT INTO BLACKLIST
+      (BLACKLIST_DEVICE)
+      VALUES('#{addr}')
+      ")
+
   # Connect to the database
   if @runThrough == 0
   	results = @db.query("SELECT * FROM VISITS LIMIT 10")
@@ -205,17 +212,54 @@ loop do
         ## Will change depending on clients needs
         ## example of MASS MoCA
 
+        #if the requirements are met, blacklist the mac_addr
+        # skip to the next mac_addr in db
+        if @db.query("
+          SELECT EXISTS( 
+                  SELECT MAC_ADDR
+                  FROM VISITS 
+                  WHERE MAC_ADDR = '#{mac_addr}'
+                  AND TIMEDIFF(START_TIME, END_TIME) > 15
+                  AND FLOOR(DATEDIFF(START_DATE, END_DATE)/7) == 1)"
+        ) == 1 
+          puts "BLACKLISTING #{mac_addr}"
+          blacklist(mac_addr)
+          next
+        elsif @db.query("
+          SELECT EXISTS (
+                    SELECT MAC_ADDR
+                    FROM VISITS
+                    WHERE MAC_ADDR = '#{mac_addr}' 
+                    AND TIMEDIFF(START_TIME, END_TIME) < 3 
+                    AND DATEDIFF(START_DATE, END_DATE) == 3
+                    AND FLOOR(DATEDIFF(START_DATE, END_DATE)/7) > 1)
+        ") == 1
+          puts "BLACKLISTING #{mac_addr}"
+          blacklist(mac_addr)
+          next
+        else
+          #this mac_addr should not be blacklisted
+          # put in the clean table 
+          #  if the mac_addr does not exist in the blacklist table already
+          @db.query("
+            INSERT INTO BESUCH
+            (DEVICE_ID, MAC_PREFIX, LOC_NAME, VISIT_DATE, START_TIME, END_TIME, COUNT, MIN_SIGNAL, MAX_SIGNAL)
+            VALUES
+            ('#{device_id}', '#{mac_prefix}', '#{location_name}', '#{visit_date}', '#{start_time}', '#{end_time}', '#{count}', '#{min_signal}', '#{max_signal}')
+            ON DUPLICATE KEY UPDATE
+            END_TIME = GREATEST(END_TIME, VALUES(END_TIME)),
+            START_TIME = LEAST(START_TIME, VALUES(START_TIME)),
+            MAX_SIGNAL = GREATEST(MAX_SIGNAL, VALUES(MAX_SIGNAL)),
+            MIN_SIGNAL = LEAST(MIN_SIGNAL, VALUES(MIN_SIGNAL)),
+            COUNT = COUNT+1
+            SELECT MAC_ADDR
+            FROM VISITS
+            WHERE MAC_ADDR NOT IN(SELECT DISTINCT BLACKLIST_DEVICE
+                                  FROM BLACKLIST
+                                  WHERE BLACKLIST_DEVICE = '#{mac_addr}')
+          ")
 
-        @db.query("INSERT INTO BESUCH
-        (DEVICE_ID, MAC_PREFIX, LOC_NAME, VISIT_DATE, START_TIME, END_TIME, COUNT, MIN_SIGNAL, MAX_SIGNAL)
-        VALUES
-        ('#{device_id}', '#{mac_prefix}', '#{location_name}', '#{visit_date}', '#{start_time}', '#{end_time}', '#{count}', '#{min_signal}', '#{max_signal}')
-        ON DUPLICATE KEY UPDATE
-        END_TIME = GREATEST(END_TIME, VALUES(END_TIME)),
-        START_TIME = LEAST(START_TIME, VALUES(START_TIME)),
-        MAX_SIGNAL = GREATEST(MAX_SIGNAL, VALUES(MAX_SIGNAL)),
-        MIN_SIGNAL = LEAST(MIN_SIGNAL, VALUES(MIN_SIGNAL)),
-        COUNT = COUNT+1")
+        end
   	end
   end
   @runThrough++
