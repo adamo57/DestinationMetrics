@@ -1,5 +1,4 @@
-#launcher.sh
-#Place in root
+#!/bin/sh
 
 cd /
 cd home/pi/DestinationMetricsLLC/Programability
