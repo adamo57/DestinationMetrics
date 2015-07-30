@@ -7,7 +7,7 @@ require 'json'
 require 'daemons'
 require './environment'
 
-Encoding.default_external = Encoding::UTF_8
+#Encoding.default_external = Encoding::UTF_8
 
 loop do
   @db_host = ENV['db_host']
@@ -62,11 +62,13 @@ loop do
   end
 
   def blacklist(addr)
+    puts "BLACKLISTING #{addr}"
     @db.query("
       INSERT INTO BLACKLIST
       (BLACKLIST_DEVICE)
       VALUES('#{addr}')
       ")
+  end
 
   # Connect to the database
   if @runThrough == 0
@@ -134,7 +136,8 @@ loop do
 
   	puts "Got all of the messages\n"
   	#Clear the database first
-    #@db.query("DROP TABLE BESUCH")
+    @db.query("DROP TABLE BESUCH")
+    @db.query("DROP TABLE BLACKLIST")
   	#puts "Dropped."
 
   	messages_arr.each do |raw|
@@ -144,6 +147,8 @@ loop do
   		mac_addr = raw_arr[1].rchomp('"').chomp('"')
   		location_id = raw_arr[2]
   		visit_time = raw_arr[3].split(' ')
+      min_signal = raw_arr[4]
+      max_signal = raw_arr[5]
 
   		@db.query("CREATE TABLE IF NOT EXISTS `BESUCH` (
       `BESUCH_ID` bigint NOT NULL AUTO_INCREMENT,
@@ -171,20 +176,25 @@ loop do
       #ADD INDEX (BLACKLIST_DEVICE)
       #USING BTREE")
 
-  			#DEVICE_ID
-  			device_id = mac_addr
-  			puts "device_id: #{device_id}"
+      if(!mac_addr.nil?)
+        #DEVICE_ID
+        device_id = mac_addr
+        puts "device_id: #{device_id}"
 
-  			#DEVICE_MAC
-  			mac_addr_tmp = mac_addr.split(':')
-  			mac_prefix = [mac_addr_tmp[0], mac_addr_tmp[1], mac_addr_tmp[2]].join(":")
-  			puts "mac_prefix: #{mac_prefix}"
-
-  			#LOCATION_ID
-  			location_name = findLocation(location_id_fix.to_i)
-  			puts "location_name: #{location_name}"
+        #DEVICE_MAC
+        mac_addr_tmp = mac_addr.split(':')
+        mac_prefix = [mac_addr_tmp[0], mac_addr_tmp[1], mac_addr_tmp[2]].join(":")
+        puts "mac_prefix: #{mac_prefix}"
+      end
 
 
+			#LOCATION_ID
+      if(!location_id_fix.nil?)
+        location_name = findLocation(location_id_fix.to_i)
+        puts "location_name: #{location_name}"
+      end
+
+      if(!visit_time.any?)
         #VISIT DATE
         visit_date = visit_time[0].rchomp('"').chomp('"')
 
@@ -197,50 +207,57 @@ loop do
 
   			#everytime there is a new ping to the device on the same day, update the end time to the current time
 
-      end_time = start_time
+        end_time = start_time
   			puts "end_time: #{end_time}"
+      end
 
-  			#COUNT
-  			#Every time a new ping of the same device occurs, increment the count val
+			#COUNT
+			#Every time a new ping of the same device occurs, increment the count val
 
-  			count = 1
-  			#if new ping occurs
-  			# => count += 1
-  			puts "count: #{count}"
+			count = 1
+			#if new ping occurs
+			# => count += 1
+			puts "count: #{count}"
 
-        # BLACKLISTING
-        ## Will change depending on clients needs
-        ## example of MASS MoCA
+      # BLACKLISTING
+      ## Will change depending on clients needs
+      ## example of MASS MoCA
 
-        #if the requirements are met, blacklist the mac_addr
-        # skip to the next mac_addr in db
-        if @db.query("
-          SELECT EXISTS( 
-                  SELECT MAC_ADDR
-                  FROM VISITS 
-                  WHERE MAC_ADDR = '#{mac_addr}'
+      #if the requirements are met, blacklist the mac_addr
+      # skip to the next mac_addr in db
+      @db.query("SET collation_connection = 'utf8_general_ci'")
+      if @db.query("
+        SELECT EXISTS( 
+                SELECT DEVICE_ID
+                FROM BESUCH 
+                WHERE DEVICE_ID = '#{device_id}'
                   AND TIMEDIFF(START_TIME, END_TIME) > 15
-                  AND FLOOR(DATEDIFF(START_DATE, END_DATE)/7) == 1)"
-        ) == 1 
-          puts "BLACKLISTING #{mac_addr}"
-          blacklist(mac_addr)
-          next
-        elsif @db.query("
-          SELECT EXISTS (
-                    SELECT MAC_ADDR
-                    FROM VISITS
-                    WHERE MAC_ADDR = '#{mac_addr}' 
-                    AND TIMEDIFF(START_TIME, END_TIME) < 3 
-                    AND DATEDIFF(START_DATE, END_DATE) == 3
-                    AND FLOOR(DATEDIFF(START_DATE, END_DATE)/7) > 1)
-        ") == 1
-          puts "BLACKLISTING #{mac_addr}"
-          blacklist(mac_addr)
-          next
-        else
-          #this mac_addr should not be blacklisted
-          # put in the clean table 
-          #  if the mac_addr does not exist in the blacklist table already
+                HAVING COUNT(DISTINCT(VISIT_DATE)) = 1)"
+      ) == 1 
+        blacklist(mac_addr)
+        next
+      elsif @db.query("
+        SELECT EXISTS (
+                  SELECT DEVICE_ID
+                  FROM BESUCH
+                  WHERE DEVICE_ID = '#{device_id}' 
+                  AND TIMEDIFF(START_TIME, END_TIME) < 3 
+                  HAVING COUNT(DISTINCT(VISIT_DATE)) = 3
+                    AND FLOOR(COUNT(DISTINCT(VISIT_DATE))/7) > 1)
+      ") == 1
+        blacklist(mac_addr)
+        next
+      else
+        #this mac_addr should not be blacklisted
+        # put in the clean table 
+        #  if the mac_addr does not exist in the blacklist table already
+        if @db.query("
+            SELECT DEVICE_MAC
+            FROM VISITS
+            LEFT JOIN BLACKLIST ON VISITS.DEVICE_MAC = BLACKLIST.BLACKLIST_DEVICE
+            WHERE BLACKLIST.BLACKLIST_DEVICE IS NULL
+            AND DEVICE_MAC = '#{mac_addr}'
+            ") == mac_addr
           @db.query("
             INSERT INTO BESUCH
             (DEVICE_ID, MAC_PREFIX, LOC_NAME, VISIT_DATE, START_TIME, END_TIME, COUNT, MIN_SIGNAL, MAX_SIGNAL)
@@ -252,16 +269,15 @@ loop do
             MAX_SIGNAL = GREATEST(MAX_SIGNAL, VALUES(MAX_SIGNAL)),
             MIN_SIGNAL = LEAST(MIN_SIGNAL, VALUES(MIN_SIGNAL)),
             COUNT = COUNT+1
-            SELECT MAC_ADDR
-            FROM VISITS
-            WHERE MAC_ADDR NOT IN(SELECT DISTINCT BLACKLIST_DEVICE
-                                  FROM BLACKLIST
-                                  WHERE BLACKLIST_DEVICE = '#{mac_addr}')
           ")
-
+          puts "INSERTING"
+        else
+          puts "That device is being blacklisted..."
         end
-  	end
+      end
+    end
   end
+  
   @runThrough++
   sleep(10)
 end
