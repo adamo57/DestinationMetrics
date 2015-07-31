@@ -39,3 +39,12 @@ def encrypt_addr(mac)
 
 	return encrypted_MAC
 end
+
+def blacklist(addr)
+  puts "BLACKLISTING #{addr}"
+  @db.query("
+    INSERT INTO BLACKLIST
+    (BLACKLIST_DEVICE)
+    VALUES('#{addr}')
+    ")
+end

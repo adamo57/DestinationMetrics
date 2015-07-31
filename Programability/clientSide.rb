@@ -17,8 +17,8 @@ end
 
 puts "Got all of the messages\n"
 #Clear the database first
-#@db.query("DROP TABLE BESUCH")
-#@db.query("DROP TABLE BLACKLIST")
+@db.query("DROP TABLE BESUCH")
+@db.query("DROP TABLE BLACKLIST")
 #puts "Dropped."
 
 messages_arr.each do |raw|
@@ -31,7 +31,6 @@ messages_arr.each do |raw|
 	min_signal = raw_arr[4]
 	max_signal = raw_arr[5]
 
-=begin
 	@db.query("CREATE TABLE IF NOT EXISTS `BESUCH` (
   `BESUCH_ID` bigint NOT NULL AUTO_INCREMENT,
   `DEVICE_ID` varchar(128) DEFAULT NULL,
@@ -47,7 +46,43 @@ messages_arr.each do |raw|
   UNIQUE KEY `BESUCH_ID` (`BESUCH_ID`),
   KEY DEVICE (`DEVICE_ID`, `LOC_NAME`, `VISIT_DATE`, `START_TIME`)
   ) ENGINE=innodb;")
-=end
+
+  
+  @db.query("CREATE TABLE IF NOT EXISTS `BLACKLIST` (
+  `BLACKLIST_ID` BIGINT(20) NOT NULL AUTO_INCREMENT,
+  `BLACKLIST_DEVICE` VARCHAR(128) DEFAULT NULL,
+  PRIMARY KEY(`BLACKLIST_ID`)
+  ) ENGINE=innodb;")
+
+  #@db.query("ALTER TABLE BLACKLIST
+  #ADD INDEX (BLACKLIST_DEVICE)
+  #USING BTREE")
+
+  @db.query("SET collation_connection = 'utf8_general_ci'")
+  if @db.query("
+    SELECT EXISTS( 
+            SELECT DEVICE_MAC
+            FROM VISITS 
+            WHERE DEVICE_MAC = '#{mac_addr}'
+              AND TIMEDIFF(START_TIME, END_TIME) > 15
+            HAVING COUNT(DISTINCT(VISIT_DATE)/7) = 1)"
+  ) == 0  
+    blacklist(mac_addr)
+    next
+  elsif @db.query("
+    SELECT EXISTS (
+              SELECT DEVICE_MAC
+              FROM VISITS
+              WHERE DEVICE_MAC = '#{mac_addr}' 
+              AND TIMEDIFF(START_TIME, END_TIME) < 3 
+              HAVING COUNT(DISTINCT(VISIT_DATE)) = 3
+                AND FLOOR(COUNT(DISTINCT(VISIT_DATE))/7) > 1)
+  ") == 0
+    blacklist(mac_addr)
+    next
+  else
+    puts "This really isn't here at all..."
+  end
 
   if(!mac_addr.nil?)
     #DEVICE_ID
@@ -95,7 +130,7 @@ messages_arr.each do |raw|
   #this mac_addr should not be blacklisted
   # put in the clean table 
   #  if the mac_addr does not exist in the blacklist table already
-=begin
+
   if @db.query("
       SELECT DEVICE_MAC
       FROM VISITS
@@ -119,6 +154,5 @@ messages_arr.each do |raw|
   else
     puts "That device is being blacklisted..."
   end
-=end
 end
 
