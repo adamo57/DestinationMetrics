@@ -2,7 +2,8 @@ require './environment'
 require 'mysql2'
 require 'aws-sdk-v1'
 
-#Connect to the Database
+#Connect to the Database 
+#Something Something Something
 @db_host = ENV['db_host']
 @db_user = ENV['db_user']
 @db_pass = ENV['db_password']
