@@ -1,5 +1,7 @@
 require 'openssl'
 require 'digest/sha1'
+require 'open-uri'
+require 'json'
 
 class String
   def rchomp(sep = $/)
@@ -47,4 +49,36 @@ def blacklist(addr)
     (BLACKLIST_DEVICE)
     VALUES('#{addr}')
     ")
+end
+
+def get_device_manufacturer(mac_addr)
+	vendorString = "http://www.macvendorlookup.com/api/v2/#{mac_addr}/pipe"
+
+	arr = open(vendorString).string
+
+	list = arr.split('|')
+	startHex, endHex, startDec, endDec, company, addressl1, addressl2, addressl3, country, type = list
+
+	return company
+end
+
+def filesize(testfile)
+	if File.exists?(testfile)
+		if File.zero?(testfile) != TRUE
+			ret = File.size(testfile)
+			return ret
+		else
+			puts "Error: File is empty"
+		end	
+	else
+		puts "Error: File does not exist"
+	end
+end
+
+def testfilesize()
+	if filesize(@tsfile) >= 1000000000
+		puts "This file needs to be truncated"
+		f = File.open(@tsfile, 'w')
+		File.close(f)
+	end
 end
