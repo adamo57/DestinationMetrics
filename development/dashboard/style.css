@@ -14,16 +14,19 @@ body
     font-size: 11px;
     font-color: #000;
 }
+.line
+{
+  text-align: center;
+}
 .dline
 {
-    fill: none;
     stroke-width: 2px;
 }
-.legend
+.dot
 {
-    font-family: sans-serif;
-    font-size: 11px;
-    font-color: #000;
+  fill: white;
+  stroke-width: 2px;
+  stroke: blue;
 }
 .tooltip
 {
@@ -35,16 +38,22 @@ body
   background-opacity: .5;
   padding: 3px;
 }
-.dot
-{
-    fill: white;
-    stroke-width: 1px;
-}
 .id1{}
 .id2{}
 .id3{}
-
-.col-md-6
+th,td
 {
-	border: 1px solid black;
+  padding: 8px;
+}
+.col-md-12
+{
+  background-color: #f0f0f0;
+  padding: 8px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+h3
+{
+  margin: 0;
 }

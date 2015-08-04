@@ -1,11 +1,20 @@
 <?php
-    $username = "root";
-    $password = "banana";
-    $host = "localhost:3306";
-    $database = "test";
+    function db_connect()
+    {
+        static $connection;
+        if(!isset($connection))
+        {
+            $config = parse_ini_file('../config.ini'); 
+            $connection = mysqli_connect($config['server'], $config['username'], $config['password'], $config['database']);
+        }
+        if($connection === false)
+        {
+            return mysqli_connect_error(); 
+        }
+        return $connection;
+    }
 
-    $server = mysqli_connect($host, $username, $password, $database);
-    $connection = mysqli_select_db($server, $database);
+    $server = db_connect();
 
     $myquery = "
                 SELECT LOCATION_NAME AS LOCATION, VISIT_DATE AS DATE, COUNT(DISTINCT DEVICE_ID) AS COUNT

@@ -1,4 +1,15 @@
-<?php
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>DM</title>
+    </head>
+    <body>
+        <p>Get a load of this script</p>
+        <?php
         ini_set('memory_limit', '-1');
         set_time_limit(0);
         ini_set('mysql.connect_timeout', 300);
@@ -34,14 +45,14 @@
         //mysqli_query($db_handle, "DELETE FROM JUNE_SUPERCLEAN") or die(mysql_error());
         //mysqli_query($db_handle, "ALTER TABLE JUNE_SUPERCLEAN AUTO_INCREMENT = 1") or die(mysql_error());
         
-        echo "beginning...";
+        echo "beginning...<br>";
         $select = "
 
-            SELECT * FROM past WHERE CAST(VISIT_TIME AS DATE)='2015-06-28' && 
-            CAST(VISIT_TIME AS TIME) >= '18:00:00' && CAST(VISIT_TIME AS TIME) < '24:00:00' &&
-            LOCATION_ID=202481601997564
+            SELECT * FROM past WHERE CAST(VISIT_TIME AS DATE)='2015-01-30' && 
+            CAST(VISIT_TIME AS TIME) >= '00:00:00' && CAST(VISIT_TIME AS TIME) < '12:00:00'
 
         ";
+        echo $select . "<br>";
         $load_data = mysqli_query($db_handle, $select);
         
         $start = microtime(true);
@@ -57,9 +68,6 @@
         }
         $into = array("(DEVICE_ID", "MAC_PREFIX", "MAC_MANUFACTURE", "LOCATION_NAME", "VISIT_DATE", 
             "START_TIME", "END_TIME", "COUNT", "MIN_SIGNAL", "MAX_SIGNAL)");
-        $key = array("ON", "DUPLICATE", "KEY", "UPDATE", "END_TIME", "=", "GREATEST(END_TIME,", "VALUES(END_TIME)),", 
-                    "START_TIME", "=", "LEAST(START_TIME,", "VALUES(START_TIME)),", "MAX_SIGNAL", "=", "GREATEST(MAX_SIGNAL,",
-                        "VALUES(MAX_SIGNAL)),", "MIN_SIGNAL", "=", "LEAST(MIN_SIGNAL,", "VALUES(MIN_SIGNAL)),", "COUNT", "=", "COUNT+1");
         $values = array();
 
         echo "setting implode... ";
@@ -78,14 +86,22 @@
                         ($row['VISIT_DB']) . ")";
         }
 
-        echo "upserting... \n";
-        $ins = "INSERT INTO wilco " . implode(',', $into) . " VALUES " . implode(',', $values) . implode(' ', $key);
-
+        echo "upserting... <br>";
+        $ins = "INSERT INTO past_clean " . implode(',', $into) . " VALUES " . implode(',', $values) . "
+                ON DUPLICATE KEY UPDATE
+                END_TIME = GREATEST(END_TIME, VALUES(END_TIME)),
+                START_TIME = LEAST(START_TIME, VALUES(START_TIME)),
+                MAX_SIGNAL = GREATEST(MAX_SIGNAL, VALUES(MAX_SIGNAL)),
+                MIN_SIGNAL = LEAST(MIN_SIGNAL, VALUES(MIN_SIGNAL)),
+                COUNT = COUNT+1";
         //echo $ins . "<br>";
         mysqli_query($db_handle, $ins) or die(mysqli_error($db_handle));
 
         $time_elapsed_secs = microtime(true) - $start;
 
-        echo "total time elapsed for " . sizeof($values) . " rows: " . round($time_elapsed_secs,2) . " seconds\n";
+        echo "total time elapsed for " . sizeof($values) . " rows: " . round($time_elapsed_secs,2) . " seconds<br>";
+        echo "GET A LOAD OF IT";
         mysqli_close($db_handle);
         ?>
+    </body>
+</html>
