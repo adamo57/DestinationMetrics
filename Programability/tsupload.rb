@@ -41,7 +41,7 @@ while true
 				  end
 				end
 			end
-			f.close #close the file
+			File.close(f) #close the file
 		end
 	else
 		puts "There is nothing new in here"

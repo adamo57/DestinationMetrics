@@ -99,8 +99,8 @@ def parse_my_date(month_date, year_time)
 
 	blank, year, splitTime = year.split(' ')
 	time, microTime = splitTime.split('.')
-	date = year "-" month "-" day " " time
-	return "\n" date
+	date = year +"-"+ month +"-"+ day +" "+ time
+	return "\n"+ date
 end
 
 def filesize(testfile)
