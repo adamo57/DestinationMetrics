@@ -19,7 +19,26 @@ while true
 			f.seek(lastpos, IO::SEEK_END) #find the last position that the iterator was at in the file
 			while !f.EOF?
 				f.each do |line| #reads the file line by line, starting from the last position recorded
-				  puts line
+				  if !f.EOF?
+				  	month_date, year_time, mac, db = line.split(',')
+				  	time = parse_my_date(month_date, year_time)
+
+				  	@db = Mysql2::Client.new(:host => @db_host, :username => @db_user, :password => @db_pass, :database => @db_name)
+
+				  	while !@db
+				  		@db = Mysql2::Client.new(:host => @db_host, :username => @db_user, :password => @db_pass, :database => @db_name)
+
+				  		puts "Failed to Connect to MySQL"
+
+				  		logFile = ""
+
+				  		ff = File.open(logFile, 'a')
+				  		current = get_time() + "Failed to connect to MySQL"
+				  		File.write(logFile, current)
+				  		File.close(logFile)
+				  		sleep(30)
+				  	end
+				  end
 				end
 			end
 			f.close #close the file
