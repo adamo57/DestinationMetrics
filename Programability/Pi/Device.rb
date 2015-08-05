@@ -1,5 +1,5 @@
 require 'json'
-require './utils.rb'
+require '../utils.rb'
 
 
 class Device

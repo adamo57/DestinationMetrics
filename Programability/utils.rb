@@ -2,7 +2,6 @@ require 'openssl'
 require 'digest/sha1'
 require 'open-uri'
 require 'json'
-require './tsupload.rb'
 
 class String
   def rchomp(sep = $/)

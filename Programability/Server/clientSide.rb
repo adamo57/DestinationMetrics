@@ -1,5 +1,5 @@
-require './piSide.rb'
-require './utils.rb'
+require '../Pi/piSide.rb'
+require '../utils.rb'
 require 'date'
 require 'json'
 
@@ -107,4 +107,3 @@ messages_arr.each do |raw|
   ")
   puts "INSERTING"
 end
-

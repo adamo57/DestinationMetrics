@@ -1,6 +1,6 @@
 require './Device.rb'
 require './Connect.rb'
-require './utils.rb'
+require '../utils.rb'
 require 'json'
 
 results = @db.query("SELECT * FROM VISITS LIMIT 2")

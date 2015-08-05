@@ -1,8 +1,7 @@
-require './utils.rb'
+require '../utils.rb'
 
-
-@tsfile = './test/www/tshark.log' # location of tshark dump file
-dm_mac_file = './test/www/mac.log' # location of device mac address 
+@tsfile = '../test/www/tshark.log' # location of tshark dump file
+dm_mac_file = '../test/www/mac.log' # location of device mac address 
 nothingCount = 0
 lastpos = 0
 
@@ -16,6 +15,16 @@ visits_array = Array.new
 while true
 	#check to see if the file needs to be truncated
 	testfilesize(@tsfile)
+	puts "Going to sleep for 30 seconds\n"
+	sleep(10)
+
+	if !visits_array.empty?
+		visits_array.delete
+		visits_array = Array.new
+	else
+		visits_array = Array.new
+	end
+	puts "Clearing the visits_array"
 
 	len = filesize(@tsfile)
 
@@ -26,9 +35,9 @@ while true
 			abort("Could not open the file") #kills program if there was an error opening the file
 		else
 			f.seek(lastpos, IO::SEEK_END) #find the last position that the iterator was at in the file
-			while !f.EOF?
+			while !f.eof?
 				f.each do |line| #reads the file line by line, starting from the last position recorded
-				  if !f.EOF?
+				  if !f.eof?
 				  	month_date, year_time, mac, signal = line.split(',')
 				  	time = parse_my_date(month_date, year_time)
 
@@ -84,9 +93,11 @@ while true
 				end
 			end
 			lastpos = f.tell #records the last read position in the file 
-			File.close(f) #close the file
+			f.close #close the file
 		end
 	else
 		puts "There is nothing new in here"
+		testfilesize(@tsfile);
+		nothingCount++
 	end
 end
