@@ -1,4 +1,4 @@
-var w = 500,
+var w = 1200,
     h = 300,
     padding = 50;
 
@@ -14,12 +14,12 @@ var yScale = d3.scale.linear()
 var lineGen = d3.svg.line()
     .x(function(d){return xScale(d.DATE);})
     .y(function(d){return yScale(d.COUNT);})
-    .interpolate("cardinal");
+    .interpolate("linear");
 
 var xAxis = d3.svg.axis()
     .orient("bottom")
     .scale(xScale)
-    .ticks(d3.time.day.utc, 14)
+    .ticks(d3.time.day.utc, 1)
     .tickSize(10)
     .tickFormat(d3.time.format.utc('%b %d'));
     
@@ -27,7 +27,12 @@ var yAxis = d3.svg.axis()
     .orient("left")
     .scale(yScale);
 
-d3.json("month.php", function(error, data) {
+var svg = d3.select(".line")
+    .append("svg")
+    .attr("width", w)
+    .attr("height", h);
+
+d3.json("week.php", function(error, data) {
     data.forEach(function(d) {
         d.LOCATION = d.LOCATION;
         d.DATE = new Date(d.DATE);
@@ -37,17 +42,26 @@ d3.json("month.php", function(error, data) {
     xScale.domain([d3.min(data,function(d) {return d.DATE;}), d3.max(data,function(d) {return d.DATE;})])
     yScale.domain([0,d3.max(data,function(d) {return +d.COUNT;})])
 
-    var svg = d3.select(".line")
-        .append("svg")
-        .attr("width", w)
-        .attr("height", h);
-
     svg.append('svg:path')
         .style("stroke", "blue")
         .attr('stroke-width', 2)
         .attr("class", "dline")
         .attr('fill', 'none')
         .attr('d', lineGen(data));
+
+    /*svg.selectAll("dot")
+        .data(data)
+        .enter()
+        .append("circle")
+        .attr("class", "dot")
+
+        .attr("cx", function(d) {
+            return xScale(d.DATE);
+        })
+        .attr("cy", function (d) {
+            return yScale(d.COUNT);
+        })
+        .attr("r", 5);*/
 
     svg.append("g")
         .attr("class", "y axis")
@@ -80,19 +94,40 @@ function redraw(data)
     var minDate = d3.min(data,function(d) {return d.DATE;});
     var maxDate = d3.max(data,function(d) {return d.DATE;});
     xScale.domain([minDate, maxDate]);
-    yScale.domain([0,d3.max(data,function(d) {return +d.COUNT;})]);
-    xAxis.scale(xScale);
-    xAxis.ticks(d3.time.day.utc, 1);
+    yScale.domain([0,d3.max(data,function(d) {return +d.COUNT;})])
 
-    var svg = d3.select(".line").transition();
+    /*var content = svg.selectAll(".dot")
+        .data(data);
+
+    content.enter()
+        .append("circle")
+        .attr("class", "dot")
+        .attr("cx", function(d) {
+            return xScale(d.DATE);
+        })
+        .attr("cy", function (d) {
+            return yScale(d.COUNT);
+        })
+        .attr("r", 5);
+
+        content.exit().remove();*/
 
     svg.select(".dline")
+        .transition()
         .duration(750)
         .attr("d", lineGen(data));
-    svg.select("x axis")
+    svg.select(".x.axis")
+        .transition()
         .duration(750)
-        .call(xAxis);
-    svg.select("y axis")
+        .call(xAxis)
+        .selectAll("text")  
+            .style("text-anchor", "end")
+            .attr("dx", "-.8em")
+            .attr("dy", ".15em")
+            .attr("transform", function(d) {
+                return "rotate(-65)" 
+            });
+    svg.select(".y.axis")
         .call(yAxis);
 }
 
@@ -104,7 +139,7 @@ function getWeek()
         d.DATE = new Date(d.DATE);
         d.COUNT = d.COUNT;
         });
-
+        xAxis.ticks(d3.time.day.utc, 1).tickFormat(d3.time.format.utc('%b %d'));
         redraw(data);
     });
 }
@@ -117,7 +152,20 @@ function getMonth()
         d.DATE = new Date(d.DATE);
         d.COUNT = d.COUNT;
         });
+        xAxis.ticks(d3.time.day.utc, 1).tickFormat(d3.time.format.utc('%b %d'));
+        redraw(data);
+    });
+}
 
+function getYear()
+{
+    d3.json("year.php", function(error, data) {
+    data.forEach(function(d) {
+        d.LOCATION = d.LOCATION;
+        d.DATE = new Date(d.DATE);
+        d.COUNT = d.COUNT;
+        });
+        xAxis.ticks(d3.time.months.utc, 1).tickFormat(d3.time.format.utc('%b'));
         redraw(data);
     });
 }

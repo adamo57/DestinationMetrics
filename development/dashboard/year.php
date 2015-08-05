@@ -20,7 +20,7 @@
                 SELECT LOCATION_NAME AS LOCATION, VISIT_DATE AS DATE, COUNT(DISTINCT DEVICE_ID) AS COUNT
                 FROM PAST_CLEAN
                 WHERE LOCATION_NAME='Lever Office, North Adams'
-                    AND VISIT_DATE BETWEEN '2015-03-31' - INTERVAL 6 DAY AND '2015-03-31'
+                    AND YEAR(VISIT_DATE)='2015'
                 GROUP BY VISIT_DATE, LOCATION_NAME
                 ORDER BY VISIT_DATE;
             ";

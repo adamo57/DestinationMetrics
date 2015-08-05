@@ -7,7 +7,7 @@
     $server = mysqli_connect($host, $username, $password, $database);
     $connection = mysqli_select_db($server, $database);
 
-    $myquery = "SELECT LOCATION_NAME AS LOCATION, VISIT_DATE AS DATE, COUNT(*) AS COUNT FROM PAST_CLEAN WHERE LOCATION_NAME!='Location not found' GROUP BY VISIT_DATE, LOCATION_NAME ORDER BY VISIT_DATE, LOCATION_NAME";
+    $myquery = "SELECT LOCATION_NAME AS LOCATION, VISIT_DATE AS DATE, COUNT(*) AS COUNT FROM PAST_CLEAN WHERE LOCATION_NAME!='Location not found' AND MONTH(VISIT_DATE)=7 GROUP BY VISIT_DATE, LOCATION_NAME ORDER BY VISIT_DATE, LOCATION_NAME";
     $query = mysqli_query($server, $myquery);
         
     if ( ! $query ) {

@@ -17,12 +17,11 @@
     $server = db_connect();
 
     $myquery = "
-                SELECT LOCATION_NAME AS LOCATION, VISIT_DATE AS DATE, COUNT(DISTINCT DEVICE_ID) AS COUNT
-                FROM PAST_CLEAN
-                WHERE LOCATION_NAME='Lever Office, North Adams'
-                    AND VISIT_DATE BETWEEN '2015-03-31' - INTERVAL 6 DAY AND '2015-03-31'
-                GROUP BY VISIT_DATE, LOCATION_NAME
-                ORDER BY VISIT_DATE;
+                SELECT LOCATION_NAME AS LOCATION, TIMESTAMP(VISIT_DATE,STR_TO_DATE(HOUR(END_TIME), '%I%p')) AS HOUR, COUNT(*) AS COUNT
+    FROM PAST_CLEAN
+    WHERE VISIT_DATE='2015-03-30'
+        AND LOCATION_NAME='Lever Office, North Adams'
+    GROUP BY HOUR(END_TIME);
             ";
     $query = mysqli_query($server, $myquery);
         
