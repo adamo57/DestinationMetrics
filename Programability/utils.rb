@@ -2,6 +2,7 @@ require 'openssl'
 require 'digest/sha1'
 require 'open-uri'
 require 'json'
+require './tsupload.rb'
 
 class String
   def rchomp(sep = $/)
@@ -96,6 +97,7 @@ def parse_my_date(month_date, year_time)
 		month = '11'
 	elsif month == 'Dec'
 		month = '12'
+	end
 
 	blank, year, splitTime = year.split(' ')
 	time, microTime = splitTime.split('.')
@@ -116,10 +118,10 @@ def filesize(testfile)
 	end
 end
 
-def testfilesize()
-	if filesize(@tsfile) >= 1000000000
+def testfilesize(file)
+	if filesize(file) >= 1000000000
 		puts "This file needs to be truncated"
-		f = File.open(@tsfile, 'w')
+		f = File.open(file, 'w')
 		File.close(f)
 	end
 end
