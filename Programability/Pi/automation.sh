@@ -1,5 +1,6 @@
 #!/bin/sh
 
+while true
 git fetch origin
 reslog=$(git log HEAD origin/master --oneline)
 
