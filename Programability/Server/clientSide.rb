@@ -17,7 +17,7 @@ end
 
 puts "Got all of the messages\n"
 #Clear the database first
-@db.query("DROP TABLE BESUCH")
+#@db.query("DROP TABLE BESUCH")
 #puts "Dropped."
 
 messages_arr.each do |raw|
@@ -29,22 +29,6 @@ messages_arr.each do |raw|
 	visit_time = raw_arr[3].split(' ')
 	min_signal = raw_arr[4]
 	max_signal = raw_arr[5]
-
-	@db.query("CREATE TABLE IF NOT EXISTS `BESUCH` (
-  `BESUCH_ID` bigint NOT NULL AUTO_INCREMENT,
-  `DEVICE_ID` varchar(128) DEFAULT NULL,
-  `MAC_PREFIX` varchar(8) NOT NULL,
-  `LOC_NAME` varchar(255) DEFAULT NULL,
-  `VISIT_DATE` date DEFAULT NULL,
-  `START_TIME` time DEFAULT NULL,
-  `END_TIME` time DEFAULT NULL,
-  `COUNT` INT DEFAULT NULL,
-  `MIN_SIGNAL` SMALLINT DEFAULT NULL,
-  `MAX_SIGNAL` SMALLINT DEFAULT NULL,
-  PRIMARY KEY (`BESUCH_ID`),
-  UNIQUE KEY `BESUCH_ID` (`BESUCH_ID`),
-  KEY DEVICE (`DEVICE_ID`, `LOC_NAME`, `VISIT_DATE`, `START_TIME`)
-  ) ENGINE=innodb;")
 
   if(!mac_addr.nil?)
     #DEVICE_ID

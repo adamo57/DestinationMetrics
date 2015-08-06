@@ -1,7 +1,9 @@
 require '../utils.rb'
 
-@tsfile = '../test/www/tshark.log' # location of tshark dump file
-dm_mac_file = '../test/www/mac.log' # location of device mac address 
+#Uploads files form the tshark dump file to RDS
+
+@tsfile = './test/www/tshark.log' # location of tshark dump file
+dm_mac_file = './test/www/mac.log' # location of device mac address 
 nothingCount = 0
 lastpos = 0
 

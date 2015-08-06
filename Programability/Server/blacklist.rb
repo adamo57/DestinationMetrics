@@ -3,16 +3,11 @@ require '../Pi/Connect.rb'
 
 #Goes through the entire BESUCH table and blacklists the MACs on the fly
 #should run once a day automatically
+
 results = @db.query("SELECT * FROM BESUCH")
 
 results.each do |row|
   mac_addr = row['MAC_PREFIX']
-
-  @db.query("CREATE TABLE IF NOT EXISTS `BLACKLIST` (
-  `BLACKLIST_ID` BIGINT(20) NOT NULL AUTO_INCREMENT,
-  `BLACKLIST_DEVICE` VARCHAR(128) DEFAULT NULL,
-  PRIMARY KEY(`BLACKLIST_ID`)
-  ) ENGINE=innodb;")
 
   #@db.query("ALTER TABLE BLACKLIST
   #ADD INDEX (BLACKLIST_DEVICE)

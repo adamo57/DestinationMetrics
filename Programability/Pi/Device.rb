@@ -1,6 +1,8 @@
 require 'json'
 require '../utils.rb'
 
+#Class file for the devices stored in the database
+
 
 class Device
 	attr_accessor :device_id, :mac_prefix, :location_id, :visit_time, :visit_date
