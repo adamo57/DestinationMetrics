@@ -39,7 +39,11 @@ from that probe request.
 `` mv ./launcher.sh ~ ``  
 `` cd ~ ``  
 
-### Run Bundle Install
+
+### Install the GemFile
+`` sudo apt-get update``
+`` gem install ruby-dev``
+`` gem install bundler``
 `` bundle install ``
 
 ### Make launcher.sh executable
