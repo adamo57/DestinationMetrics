@@ -42,7 +42,8 @@ from that probe request.
 
 ### Install the GemFile
 `` sudo apt-get update``
-`` gem install ruby-dev``
+`` sudo apt-get install ruby-dev``
+`` sudo apt-get install libmysqlclient-dev``
 `` gem install bundler``
 `` bundle install ``
 
