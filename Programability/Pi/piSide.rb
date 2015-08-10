@@ -1,9 +1,11 @@
 require './Device.rb'
 require './Connect.rb'
-require './utils.rb'
+require '../utils.rb'
 require 'json'
 
-results = @db.query("SELECT * FROM VISITS LIMIT 2")
+#Code for the pi to grab info from the visits table and pushes info to SQS
+
+results = @db.query("SELECT * FROM VISITS LIMIT 100")
 
 #Pull info from the VISITS TABLE in database
 if results.count == 0

@@ -1,5 +1,7 @@
 require 'json'
-require './utils.rb'
+require '../utils.rb'
+
+#Class file for the devices stored in the database
 
 
 class Device

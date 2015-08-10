@@ -1,4 +1,4 @@
-require './environment'
+require '../environment'
 require 'mysql2'
 require 'aws-sdk-v1'
 
