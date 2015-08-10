@@ -61,7 +61,9 @@ while true
 				  	#Make array that will be pushed into VISITS table
 				  	if !visits_array.empty?
 				  		if !visits_array.include?(mac)
+				  			puts "The mac is not in here"
 				  			visits_array.push(mac)
+				  			puts "pushing the mac into visits array"
 				  			manufacturer = get_manufacturer(mac)
 				  			puts mac + ", "+ manufacturer + "--"+ visits_array.count + "\n"
 				  			if manufacturer != NULL
@@ -99,7 +101,7 @@ while true
 		end
 	else
 		puts "There is nothing new in here"
-		testfilesize(@tsfile);
-		nothingCount++
+		testfilesize(@tsfile)
+		nothingCount += 1
 	end
 end
