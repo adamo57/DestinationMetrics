@@ -1,6 +1,16 @@
 require '../utils.rb'
+require '../environment.rb'
+require 'mysql2'
+require 'aws-sdk-v1'
 
 #Uploads files form the tshark dump file to RDS
+
+@db_host = ENV['db_host']
+@db_user = ENV['db_user']
+@db_pass = ENV['db_password']
+@db_name = ENV['db_name']
+
+@db = Mysql2::Client.new(:host => @db_host, :username => @db_user, :password => @db_pass, :database => @db_name)
 
 @tsfile = '/var/www/tshark.log' # location of tshark dump file
 dm_mac_file = '/var/www/mac.log' # location of device mac address 
@@ -32,18 +42,18 @@ while true
 
 	if len > lastpos #if the file is longer than before
 		puts "There is new stuff!"
-		f = File.open(@tsfile, 'r') #open the file with read permissions
+		f = File.open(File.expand_path(@tsfile), 'r') #open the file with read permissions
 		if f == FALSE
 			abort("Could not open the file") #kills program if there was an error opening the file
 		else
-			f.seek(lastpos, IO::SEEK_END) #find the last position that the iterator was at in the file
+			puts "We in here"
+			#f.tell
+			#f.seek(lastpos) #find the last position that the iterator was at in the file
 			f.each do |line| #reads the file line by line, starting from the last position recorded
 			  if !f.eof?
 			  	puts "aggregating the data"
 			  	month_date, year_time, mac, signal = line.split(',')
 			  	time = parse_my_date(month_date, year_time)
-
-			  	@db = Mysql2::Client.new(:host => @db_host, :username => @db_user, :password => @db_pass, :database => @db_name)
 
 			  	while !@db #if there is no connection, keep retrying the connection and write the errors to the logfile
 			  		@db = Mysql2::Client.new(:host => @db_host, :username => @db_user, :password => @db_pass, :database => @db_name)
@@ -65,9 +75,9 @@ while true
 			  			puts "The mac is not in here"
 			  			visits_array.push(mac)
 			  			puts "pushing the mac into visits array"
-			  			manufacturer = get_manufacturer(mac)
-			  			puts mac + ", "+ manufacturer + "--"+ visits_array.count + "\n"
-			  			if manufacturer != NULL
+			  			manufacturer = get_device_manufacturer(mac)
+			  			puts "#{mac} , #{manufacturer} -- #{visits_array.count}\n"
+			  			if manufacturer != ""
 			  				okay = @db.query("INSERT INTO VISITS (VISIT_ID, DEVICE_MAC, MAC_MANUFACTURE, LOCATION_ID, VISIT_TIME, VISIT_DB) VALUES('', '#{mac}', '#{manufacturer}', '#{dm_mac}', '#{time}', '#{signal}')")
 			  			else
 			  				okay = @db.query("INSERT INTO VISITS (VISIT_ID, DEVICE_MAC, MAC_MANUFACTURE, LOCATION_ID, VISIT_TIME, VISIT_DB) VALUES('', '#{mac}', '', '#{dm_mac}', '#{time}', '#{signal}')")
@@ -79,13 +89,13 @@ while true
 			  				puts "Had to delete the visits_array"
 			  			end
 			  		else
-			  			puts mac + " was already recently uploaded - " + time + "\n"
+			  			puts"#{mac} was already recently uploaded - #{time} \n"
 			  		end
 			  	else
 			  		visits_array.push(mac)
-			  		manufacturer = get_manufacturer(mac)
-			  		puts mac +", "+ manufacturer +""+ visits_array.count + "\n"
-			  		if manufacturer != NULL
+			  		manufacturer = get_device_manufacturer(mac)
+			  		puts "#{mac} , #{manufacturer} #{visits_array.count}\n"
+			  		if manufacturer != ""
 			  			okay = @db.query("INSERT INTO VISITS (VISIT_ID, DEVICE_MAC, MAC_MANUFACTURE, LOCATION_ID, VISIT_TIME, VISIT_DB) VALUES('', '#{mac}', '#{manufacturer}', '#{dm_mac}', '#{time}', '#{signal}')")
 			  		else
 			  			okay = @db.query("INSERT INTO VISITS (VISIT_ID, DEVICE_MAC, MAC_MANUFACTURE, LOCATION_ID, VISIT_TIME, VISIT_DB) VALUES('', '#{mac}', '', '#{dm_mac}', '#{time}', '#{signal}')")
