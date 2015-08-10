@@ -1,9 +1,6 @@
-var w = 1200,
-    h = 300,
-    padding = 50;
-
-var formatTime = d3.time.format("%b %d");
-var formatCount = d3.format("0,000");
+var w = 1200;
+var h = 300;
+var padding = 50;
 
 var xScale = d3.time.scale()
     .range([padding, w - padding * 2]);
@@ -32,11 +29,12 @@ var svg = d3.select(".line")
     .attr("width", w)
     .attr("height", h);
 
-d3.json("week.php", function(error, data) {
-    data.forEach(function(d) {
-        d.LOCATION = d.LOCATION;
-        d.DATE = new Date(d.DATE);
-        d.COUNT = d.COUNT;
+d3.json("week.php", function(error, data)
+    {
+        data.forEach(function(d) {
+            d.LOCATION = d.LOCATION;
+            d.DATE = new Date(d.DATE);
+            d.COUNT = d.COUNT;
     });
 
     xScale.domain([d3.min(data,function(d) {return d.DATE;}), d3.max(data,function(d) {return d.DATE;})])
@@ -48,20 +46,6 @@ d3.json("week.php", function(error, data) {
         .attr("class", "dline")
         .attr('fill', 'none')
         .attr('d', lineGen(data));
-
-    /*svg.selectAll("dot")
-        .data(data)
-        .enter()
-        .append("circle")
-        .attr("class", "dot")
-
-        .attr("cx", function(d) {
-            return xScale(d.DATE);
-        })
-        .attr("cy", function (d) {
-            return yScale(d.COUNT);
-        })
-        .attr("r", 5);*/
 
     svg.append("g")
         .attr("class", "y axis")
@@ -89,28 +73,129 @@ d3.json("week.php", function(error, data) {
             });
 });
 
+function donut()
+{
+    var dataset = {
+      apples: [388,1433],
+    };
+
+    var width = 100,
+        height = 150,
+        radius = Math.min(width, height) / 2;
+
+    var percent = (dataset.apples[0] / (dataset.apples[0] + dataset.apples[1])) * 100;
+    percent = Math.round(percent * 10) / 10;
+
+    var color = d3.scale.category20();
+
+    var pie = d3.layout.pie()
+        .sort(null);
+
+    var arc = d3.svg.arc()
+        .innerRadius(radius)
+        .outerRadius(radius - 20);
+
+    var donut_svg = d3.select(".traffic")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+    var path = donut_svg.selectAll("path")
+        .data(pie(dataset.apples))
+        .enter()
+        .append("path")
+        .attr("fill", function(d, i) { return color(i); })
+        .attr("d", arc);
+
+    var label = donut_svg.append("g")
+        .attr("height", 100)
+        .attr("width", 100)
+        .attr("transform", "translate(-" + ((width / 3) - 3) + "," + (radius + 20) + ")");
+
+    label.append("text")
+        .attr("x", 10)
+        .attr("y", -65)
+        .text(percent + "%")
+        .attr("fill", "black")
+        .attr("font-size", "14px")
+        .attr("font-weight", "bold");
+
+    label.append("text")
+        .attr("x", 0)
+        .attr("y", 0)
+        .text("new visitors")
+        .attr("fill", "black")
+        .attr("font-size", "12px");
+}
+
+function donut2()
+{
+    var dataset = {
+      apples: [600,1],
+    };
+
+    var width = 100,
+        height = 150,
+        radius = Math.min(width, height) / 2;
+
+    var percent = (dataset.apples[0] / (dataset.apples[0] + dataset.apples[1])) * 100;
+    percent = Math.round(percent * 10) / 10;
+
+    var color = d3.scale.category20();
+
+    var pie = d3.layout.pie()
+        .sort(null);
+
+    var arc = d3.svg.arc()
+        .innerRadius(radius)
+        .outerRadius(radius - 20);
+
+    var donut_svg = d3.select(".traffic2")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+    var path = donut_svg.selectAll("path")
+        .data(pie(dataset.apples))
+        .enter()
+        .append("path")
+        .attr("fill", function(d, i) { return color(i); })
+        .attr("d", arc);
+
+    var label = donut_svg.append("g")
+        .attr("height", 100)
+        .attr("width", 100)
+        .attr("transform", "translate(-" + ((width / 3) - 3) + "," + (radius + 20) + ")");
+
+    label.append("text")
+        .attr("x", 10)
+        .attr("y", -65)
+        .text(percent + "%")
+        .attr("fill", "black")
+        .attr("font-size", "14px")
+        .attr("font-weight", "bold");
+
+    label.append("text")
+        .attr("x", 0)
+        .attr("y", 0)
+        .text("from MoCA")
+        .attr("fill", "black")
+        .attr("font-size", "12px");
+}
+
+donut();
+donut2();
+
 function redraw(data)
 {
     var minDate = d3.min(data,function(d) {return d.DATE;});
     var maxDate = d3.max(data,function(d) {return d.DATE;});
     xScale.domain([minDate, maxDate]);
     yScale.domain([0,d3.max(data,function(d) {return +d.COUNT;})])
-
-    /*var content = svg.selectAll(".dot")
-        .data(data);
-
-    content.enter()
-        .append("circle")
-        .attr("class", "dot")
-        .attr("cx", function(d) {
-            return xScale(d.DATE);
-        })
-        .attr("cy", function (d) {
-            return yScale(d.COUNT);
-        })
-        .attr("r", 5);
-
-        content.exit().remove();*/
 
     svg.select(".dline")
         .transition()
