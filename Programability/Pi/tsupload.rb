@@ -37,64 +37,64 @@ while true
 			abort("Could not open the file") #kills program if there was an error opening the file
 		else
 			f.seek(lastpos, IO::SEEK_END) #find the last position that the iterator was at in the file
-			while !f.eof?
-				f.each do |line| #reads the file line by line, starting from the last position recorded
-				  if !f.eof?
-				  	month_date, year_time, mac, signal = line.split(',')
-				  	time = parse_my_date(month_date, year_time)
+			f.each do |line| #reads the file line by line, starting from the last position recorded
+			  if !f.eof?
+			  	puts "aggregating the data"
+			  	month_date, year_time, mac, signal = line.split(',')
+			  	time = parse_my_date(month_date, year_time)
 
-				  	@db = Mysql2::Client.new(:host => @db_host, :username => @db_user, :password => @db_pass, :database => @db_name)
+			  	@db = Mysql2::Client.new(:host => @db_host, :username => @db_user, :password => @db_pass, :database => @db_name)
 
-				  	while !@db #if there is no connection, keep retrying the connection and write the errors to the logfile
-				  		@db = Mysql2::Client.new(:host => @db_host, :username => @db_user, :password => @db_pass, :database => @db_name)
+			  	while !@db #if there is no connection, keep retrying the connection and write the errors to the logfile
+			  		@db = Mysql2::Client.new(:host => @db_host, :username => @db_user, :password => @db_pass, :database => @db_name)
 
-				  		puts "Failed to Connect to MySQL"
+			  		puts "Failed to Connect to MySQL"
 
-				  		logFile = "/var/www/log.log"
+			  		logFile = "/var/www/log.log"
 
-				  		ff = File.open(logFile, 'a')
-				  		current = get_time() + "Failed to connect to MySQL"
-				  		File.write(logFile, current)
-				  		File.close(logFile)
-				  		sleep(30)
-				  	end
-				  	#Make array that will be pushed into VISITS table
-				  	if !visits_array.empty?
-				  		if !visits_array.include?(mac)
-				  			puts "The mac is not in here"
-				  			visits_array.push(mac)
-				  			puts "pushing the mac into visits array"
-				  			manufacturer = get_manufacturer(mac)
-				  			puts mac + ", "+ manufacturer + "--"+ visits_array.count + "\n"
-				  			if manufacturer != NULL
-				  				okay = @db.query("INSERT INTO VISITS (VISIT_ID, DEVICE_MAC, MAC_MANUFACTURE, LOCATION_ID, VISIT_TIME, VISIT_DB) VALUES('', '#{mac}', '#{manufacturer}', '#{dm_mac}', '#{time}', '#{signal}')")
-				  			else
-				  				okay = @db.query("INSERT INTO VISITS (VISIT_ID, DEVICE_MAC, MAC_MANUFACTURE, LOCATION_ID, VISIT_TIME, VISIT_DB) VALUES('', '#{mac}', '', '#{dm_mac}', '#{time}', '#{signal}')")
-				  			end
+			  		ff = File.open(logFile, 'a')
+			  		current = get_time() + "Failed to connect to MySQL"
+			  		File.write(logFile, current)
+			  		File.close(logFile)
+			  		sleep(30)
+			  	end
+			  	puts "Connected to db"
+			  	#Make array that will be pushed into VISITS table
+			  	if !visits_array.empty?
+			  		if !visits_array.include?(mac)
+			  			puts "The mac is not in here"
+			  			visits_array.push(mac)
+			  			puts "pushing the mac into visits array"
+			  			manufacturer = get_manufacturer(mac)
+			  			puts mac + ", "+ manufacturer + "--"+ visits_array.count + "\n"
+			  			if manufacturer != NULL
+			  				okay = @db.query("INSERT INTO VISITS (VISIT_ID, DEVICE_MAC, MAC_MANUFACTURE, LOCATION_ID, VISIT_TIME, VISIT_DB) VALUES('', '#{mac}', '#{manufacturer}', '#{dm_mac}', '#{time}', '#{signal}')")
+			  			else
+			  				okay = @db.query("INSERT INTO VISITS (VISIT_ID, DEVICE_MAC, MAC_MANUFACTURE, LOCATION_ID, VISIT_TIME, VISIT_DB) VALUES('', '#{mac}', '', '#{dm_mac}', '#{time}', '#{signal}')")
+			  			end
 
-				  			if visits_array.count >= 20
-				  				visits_array.delete
-				  				visits_array = Array.new
-				  				puts "Had to delete the visits_array"
-				  			end
-				  		else
-				  			puts mac + " was already recently uploaded - " + time + "\n"
-				  		end
-				  	else
-				  		visits_array.push(mac)
-				  		manufacturer = get_manufacturer(mac)
-				  		puts mac +", "+ manufacturer +""+ visits_array.count + "\n"
-				  		if manufacturer != NULL
-				  			okay = @db.query("INSERT INTO VISITS (VISIT_ID, DEVICE_MAC, MAC_MANUFACTURE, LOCATION_ID, VISIT_TIME, VISIT_DB) VALUES('', '#{mac}', '#{manufacturer}', '#{dm_mac}', '#{time}', '#{signal}')")
-				  		else
-				  			okay = @db.query("INSERT INTO VISITS (VISIT_ID, DEVICE_MAC, MAC_MANUFACTURE, LOCATION_ID, VISIT_TIME, VISIT_DB) VALUES('', '#{mac}', '', '#{dm_mac}', '#{time}', '#{signal}')")
-				  		end
-				  	end
-				  	if !okay
-				  		puts "Query Error"
-				  	end
-				  end
-				end
+			  			if visits_array.count >= 20
+			  				visits_array.delete
+			  				visits_array = Array.new
+			  				puts "Had to delete the visits_array"
+			  			end
+			  		else
+			  			puts mac + " was already recently uploaded - " + time + "\n"
+			  		end
+			  	else
+			  		visits_array.push(mac)
+			  		manufacturer = get_manufacturer(mac)
+			  		puts mac +", "+ manufacturer +""+ visits_array.count + "\n"
+			  		if manufacturer != NULL
+			  			okay = @db.query("INSERT INTO VISITS (VISIT_ID, DEVICE_MAC, MAC_MANUFACTURE, LOCATION_ID, VISIT_TIME, VISIT_DB) VALUES('', '#{mac}', '#{manufacturer}', '#{dm_mac}', '#{time}', '#{signal}')")
+			  		else
+			  			okay = @db.query("INSERT INTO VISITS (VISIT_ID, DEVICE_MAC, MAC_MANUFACTURE, LOCATION_ID, VISIT_TIME, VISIT_DB) VALUES('', '#{mac}', '', '#{dm_mac}', '#{time}', '#{signal}')")
+			  		end
+			  	end
+			  	if !okay
+			  		puts "Query Error"
+			  	end
+			  end
 			end
 			lastpos = f.tell #records the last read position in the file 
 			f.close #close the file
