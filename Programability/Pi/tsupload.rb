@@ -31,7 +31,7 @@ while true
 	sleep(10)
 
 	if !visits_array.empty?
-		visits_array.delete
+		visits_array.clear
 		visits_array = Array.new
 	else
 		visits_array = Array.new
@@ -47,8 +47,8 @@ while true
 			abort("Could not open the file") #kills program if there was an error opening the file
 		else
 			puts "We in here"
-			#f.tell
-			#f.seek(lastpos) #find the last position that the iterator was at in the file
+			f.tell
+			f.seek(lastpos) #find the last position that the iterator was at in the file
 			f.each do |line| #reads the file line by line, starting from the last position recorded
 			  if !f.eof?
 			  	puts "aggregating the data"
@@ -84,7 +84,7 @@ while true
 			  			end
 
 			  			if visits_array.count >= 20
-			  				visits_array.delete
+			  				visits_array.clear
 			  				visits_array = Array.new
 			  				puts "Had to delete the visits_array"
 			  			end
