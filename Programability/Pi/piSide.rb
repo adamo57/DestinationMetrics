@@ -5,7 +5,7 @@ require 'json'
 
 #Code for the pi to grab info from the visits table and pushes info to SQS
 
-results = @db.query("SELECT * FROM VISITS LIMIT 100")
+results = @db.query("SELECT * FROM VISITS LIMIT 10")
 
 #Pull info from the VISITS TABLE in database
 if results.count == 0

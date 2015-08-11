@@ -1,4 +1,5 @@
-require '../Pi/piSide.rb'
+require '../Pi/Device.rb'
+require '../Pi/Connect.rb'
 require '../utils.rb'
 require 'date'
 require 'json'
@@ -21,6 +22,12 @@ puts "Got all of the messages\n"
 #puts "Dropped."
 
 messages_arr.each do |raw|
+	puts "#{raw}"
+	raw_arr = raw.split(',')
+	raw_arr.each do |x|
+		puts "X: #{x}"
+	end
+=begin
 	#Scrub Scrub Scrub
 	#Anyways, we are going to put the new 'scrubbed' data into a new table
 	raw_arr = raw.split(',')
@@ -39,6 +46,10 @@ messages_arr.each do |raw|
     mac_addr_tmp = mac_addr.split(':')
     mac_prefix = [mac_addr_tmp[0], mac_addr_tmp[1], mac_addr_tmp[2]].join(":")
     puts "mac_prefix: #{mac_prefix}"
+  end
+
+  if !location_id != ""
+    location_name = location_id.to_s
   end
 
   if(!visit_time.any?)
@@ -90,4 +101,5 @@ messages_arr.each do |raw|
     COUNT = COUNT+1
   ")
   puts "INSERTING"
+=end
 end
