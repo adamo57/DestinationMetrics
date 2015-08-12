@@ -23,6 +23,7 @@ puts "Got all of the messages\n"
 messages_arr.each do |raw|
   #Parse the message into a readable string
   data = JSON.parse(raw)
+
 	#Scrub Scrub Scrub
   #Make a new Device of all of the elements that we have gotten from the JSON parsed SQS message
 

@@ -4,9 +4,7 @@ require '../utils.rb'
 require 'json'
 
 #Code for the pi to grab info from the visits table and pushes info to SQS
-offset = 0
-
-results = @db.query("SELECT * FROM VISITS LIMIT 10 OFFSET #{offset}")
+results = @db.query("SELECT * FROM VISITS LIMIT 10")
 
 while true
 	#Pull info from the VISITS TABLE in database
@@ -27,9 +25,6 @@ while true
 		end
 
 		# Send the data obtained in a message to the queue
-
-		msgs = @queue.batch_send(encrypted_data)
-		puts "Sent all of the messages"
-		offset += 10
-	end
+	msgs = @queue.batch_send(encrypted_data)
+	puts "Sent all of the messages"
 end
