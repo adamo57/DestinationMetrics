@@ -1,4 +1,5 @@
-require '../Pi/piSide.rb'
+require '../Pi/Device.rb'
+require '../Pi/Connect.rb'
 require '../utils.rb'
 require 'date'
 require 'json'
@@ -6,6 +7,8 @@ require 'json'
 messages_arr = Array.new
 
 #Read data from the queue
+#write raw data to the visits table
+#then clean and push to besuch
 recieved_message = @queue.receive_messages(wait_time_seconds: 15, num_messages: 10, visibility_timeout: 10)
 message = JSON.parse(recieved_message.body)
 
@@ -16,72 +19,29 @@ puts "Recieved Message: #{recieved_message.id}"
 end
 
 puts "Got all of the messages\n"
-#Clear the database first
-#@db.query("DROP TABLE BESUCH")
-#puts "Dropped."
 
 messages_arr.each do |raw|
+  #Parse the message into a readable string
+  data = JSON.parse(raw)
 	#Scrub Scrub Scrub
-	#Anyways, we are going to put the new 'scrubbed' data into a new table
-	raw_arr = raw.split(',')
-	mac_addr = raw_arr[1].rchomp('"').chomp('"')
-	location_id = raw_arr[2]
-	visit_time = raw_arr[3].split(' ')
-	min_signal = raw_arr[4]
-	max_signal = raw_arr[5]
+  #Make a new Device of all of the elements that we have gotten from the JSON parsed SQS message
 
-  if(!mac_addr.nil?)
-    #DEVICE_ID
-    device_id = mac_addr
-    puts "device_id: #{device_id}"
+  insert_device = Device.new(data["Device_ID"], data["MAC_Prefix"],data["Location_Name"], data["visit_time"])
 
-    #DEVICE_MAC
-    mac_addr_tmp = mac_addr.split(':')
-    mac_prefix = [mac_addr_tmp[0], mac_addr_tmp[1], mac_addr_tmp[2]].join(":")
-    puts "mac_prefix: #{mac_prefix}"
-  end
+  #Break the visit_time down to get visit_date, start/end_time, and max/min_signal
+  visit_date, start_time, max_signal = data["visit_time"].split(' ')
 
-  if(!visit_time.any?)
-    #VISIT DATE
-    visit_date = visit_time[0].rchomp('"').chomp('"')
+  #Setting variables that will be later adjusted by MySQL
+  count = 0
+  end_time = start_time
+  min_signal = max_signal
 
-    puts "visit_date: #{visit_date}"
-
-			#START_TIME / END TIME
-
-    start_time = visit_time[1].rchomp('"').chomp('"')
-			puts "start_time: #{start_time}"
-
-			#everytime there is a new ping to the device on the same day, update the end time to the current time
-
-    end_time = start_time
-			puts "end_time: #{end_time}"
-  end
-
-	#COUNT
-	#Every time a new ping of the same device occurs, increment the count val
-
-	count = 1
-	#if new ping occurs
-	# => count += 1
-	puts "count: #{count}"
-
-  # BLACKLISTING
-  ## Will change depending on clients needs
-  ## example of MASS MoCA
-
-  #if the requirements are met, blacklist the mac_addr
-  # skip to the next mac_addr in db
-
-  #this mac_addr should not be blacklisted
-  # put in the clean table 
-  #  if the mac_addr does not exist in the blacklist table already
-
+  #Insert the clean data to the clean table
   @db.query("
     INSERT INTO BESUCH
     (DEVICE_ID, MAC_PREFIX, LOC_NAME, VISIT_DATE, START_TIME, END_TIME, COUNT, MIN_SIGNAL, MAX_SIGNAL)
     VALUES
-    ('#{device_id}', '#{mac_prefix}', '#{location_name}', '#{visit_date}', '#{start_time}', '#{end_time}', '#{count}', '#{min_signal}', '#{max_signal}')
+    ('#{insert_device.device_id}', '#{insert_device.mac_prefix}', '#{insert_device.location_id}', '#{visit_date}', '#{start_time}', '#{end_time}', '#{count}', '#{min_signal}', '#{max_signal}')
     ON DUPLICATE KEY UPDATE
     END_TIME = GREATEST(END_TIME, VALUES(END_TIME)),
     START_TIME = LEAST(START_TIME, VALUES(START_TIME)),

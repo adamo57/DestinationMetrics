@@ -4,6 +4,7 @@ require 'mysql2'
 require 'aws-sdk-v1'
 
 #Uploads files form the tshark dump file to RDS
+#have tshark write to  the SQS
 
 @db_host = ENV['db_host']
 @db_user = ENV['db_user']
