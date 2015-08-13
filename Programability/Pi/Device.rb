@@ -5,7 +5,7 @@ require '../utils.rb'
 
 
 class Device
-	attr_accessor :device_id, :mac_prefix, :location_id, :visit_time, :visit_date
+	attr_accessor :device_id, :mac_prefix, :location_id, :visit_time
 
 	def initialize(device_id, mac_prefix, location_id, visit_time)
 		@device_id = device_id

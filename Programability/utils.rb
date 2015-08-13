@@ -68,7 +68,7 @@ def get_time()
 end
 
 def parse_my_date(month_date, year_time)
-	parts = month.split(/\s+/)
+	parts = month_date.split(/\s+/)
 	month = parts[0]
 	day = parts[1]
 
@@ -98,9 +98,10 @@ def parse_my_date(month_date, year_time)
 		month = '12'
 	end
 
-	blank, year, splitTime = year.split(' ')
-	time, microTime = splitTime.split('.')
-	date = year +"-"+ month +"-"+ day +" "+ time
+	year, splitTime = year_time.split(' ')
+	time, microTime = splitTime.to_s.split('.')
+	date = "#{year}-#{month}-#{day} #{time}"
+	puts "#{date}"
 	return "\n"+ date
 end
 
