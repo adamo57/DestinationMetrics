@@ -9,7 +9,7 @@ function db_connect()
     static $connection;
     if(!isset($connection))
     {
-        $config = parse_ini_file('config.ini'); 
+        $config = parse_ini_file('../config.ini'); 
         $connection = mysqli_connect($config['server'], $config['username'], $config['password'], $config['database']);
     }
     if($connection === false)
@@ -31,13 +31,10 @@ function findLocation($LOC_ID)
     return $LOC_NAME;
 }
 
-//mysqli_query($db_handle, "DELETE FROM JUNE_SUPERCLEAN") or die(mysql_error());
-//mysqli_query($db_handle, "ALTER TABLE JUNE_SUPERCLEAN AUTO_INCREMENT = 1") or die(mysql_error());
-
 echo "beginning...";
 $select = "
 
-    SELECT * FROM past WHERE CAST(VISIT_TIME AS DATE)='2015-07-31' && 
+    SELECT * FROM past WHERE CAST(VISIT_TIME AS DATE)='2015-08-01' && 
     CAST(VISIT_TIME AS TIME) >= '00:00:00' && CAST(VISIT_TIME AS TIME) < '24:00:00'
 
 ";
@@ -80,7 +77,6 @@ foreach($rowset as $row)
 echo "upserting... \n";
 $ins = "INSERT INTO past_clean " . implode(',', $into) . " VALUES " . implode(',', $values) . implode(' ', $key);
 
-//echo $ins . "<br>";
 mysqli_query($db_handle, $ins) or die(mysqli_error($db_handle));
 
 $time_elapsed_secs = microtime(true) - $start;
