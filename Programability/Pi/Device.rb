@@ -5,13 +5,14 @@ require '../utils.rb'
 
 
 class Device
-	attr_accessor :device_id, :mac_prefix, :location_id, :visit_time
+	attr_accessor :device_id, :mac_prefix, :location_id, :visit_time, :visit_db
 
-	def initialize(device_id, mac_prefix, location_id, visit_time)
+	def initialize(device_id, mac_prefix, location_id, visit_time, visit_db)
 		@device_id = device_id
 		@mac_prefix = mac_prefix
 		@location_id = location_id
 		@visit_time = visit_time
+		@visit_db = visit_db
 	end
 
 	def show
@@ -20,7 +21,7 @@ class Device
 	end
 
 	def to_s
-		"Device ID: #{device_id}, MAC Prefix: #{encrypt_addr(mac_prefix)}, Location Name: #{get_location_name(location_id)}, Visit Time: #{visit_time}"
+		"Device ID: #{device_id}, MAC Prefix: #{encrypt_addr(mac_prefix)}, Location Name: #{get_location_name(location_id)}, Visit Time: #{visit_time}, Signal: #{visit_db}"
 	end
 
 	def to_json
