@@ -3,6 +3,7 @@ require '../environment.rb'
 require 'mysql2'
 require 'aws-sdk-v1'
 require 'json'
+require './Device.rb'
 
 #Uploads files form the tshark dump file to RDS
 #have tshark write to  the SQS
@@ -52,14 +53,12 @@ while true
 			  	if !visits_array.empty?
 			  		if !visits_array.include?(mac)
 			  			visits_array.push(mac)
-			  			manufacturer = get_device_manufacturer(mac)
-			  			loc_name = get_location_name(dm_mac)
 			  			puts "#{mac} , #{manufacturer} -- #{visits_array.count}\n"
 			  			if manufacturer != ""
-			  				message_device = Device.new(mac, manufacturer, loc_name, time, signal)
+			  				message_device = Device.new('', mac, dm_mac, time, signal)
 			  				@message_device_json = message_device.to_json
 			  			else
-			  				message_device = Device.new(mac, '', loc_name, time, signal)
+			  				message_device = Device.new('', mac, '', dm_mac, time, signal)
 			  				@message_device_json = message_device.to_json
 			  			end
 
@@ -76,10 +75,10 @@ while true
 			  		manufacturer = get_device_manufacturer(mac)
 			  		puts "#{mac} , #{manufacturer} #{visits_array.count}\n"
 			  		if manufacturer != ""
-			  			message_device = Device.new(mac, manufacturer, loc_name, time, signal)
+			  			message_device = Device.new('', mac, dm_mac, time, signal)
 			  			@message_device_json = message_device.to_json
 			  		else
-			  			message_device = Device.new(mac, '', loc_name, time, signal)
+			  			message_device = Device.new('', mac, '', dm_mac, time, signal)
 			  			@message_device_json = message_device.to_json
 			  		end
 			  		if !message_device
