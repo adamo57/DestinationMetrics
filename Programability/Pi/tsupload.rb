@@ -53,8 +53,8 @@ while true
 			  	if !visits_array.empty?
 			  		if !visits_array.include?(mac)
 			  			visits_array.push(mac)
-			  			puts "#{mac} , #{manufacturer} -- #{visits_array.count}\n"
-			  			if manufacturer != ""
+			  			puts "#{mac} , -- #{visits_array.count}\n"
+			  			if get_device_manufacturer(mac) != ""
 			  				message_device = Device.new('', mac, dm_mac, time, signal)
 			  				@message_device_json = message_device.to_json
 			  			else
@@ -72,9 +72,8 @@ while true
 			  		end
 			  	else
 			  		visits_array.push(mac)
-			  		manufacturer = get_device_manufacturer(mac)
-			  		puts "#{mac} , #{manufacturer} #{visits_array.count}\n"
-			  		if manufacturer != ""
+			  		puts "#{mac} , #{visits_array.count}\n"
+			  		if get_device_manufacturer(mac) != ""
 			  			message_device = Device.new('', mac, dm_mac, time, signal)
 			  			@message_device_json = message_device.to_json
 			  		else
