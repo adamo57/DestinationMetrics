@@ -4,6 +4,7 @@ require 'mysql2'
 require 'aws-sdk-v1'
 require 'json'
 require './Device.rb'
+require './Connect.rb'
 
 #Uploads files form the tshark dump file to RDS
 #have tshark write to  the SQS
@@ -19,6 +20,7 @@ dm_mac = loc.gets #Get the location of the mac address from the file
 loc.close
 
 visits_array = Array.new
+@json_array = Array.new
 
 while true
 	#check to see if the file needs to be truncated
@@ -56,10 +58,12 @@ while true
 			  			puts "#{mac} , -- #{visits_array.count}\n"
 			  			if get_device_manufacturer(mac) != ""
 			  				message_device = Device.new('', mac, dm_mac, time, signal)
-			  				@message_device_json = message_device.to_json
+			  				json_device = message_device.to_json
+			  				@json_array.push(json_device)
 			  			else
 			  				message_device = Device.new('', mac, '', dm_mac, time, signal)
-			  				@message_device_json = message_device.to_json
+			  				json_device = message_device.to_json
+			  				@json_array.push(json_device)
 			  			end
 
 			  			if visits_array.count >= 20
@@ -75,10 +79,12 @@ while true
 			  		puts "#{mac} , #{visits_array.count}\n"
 			  		if get_device_manufacturer(mac) != ""
 			  			message_device = Device.new('', mac, dm_mac, time, signal)
-			  			@message_device_json = message_device.to_json
+			  			json_device = message_device.to_json
+			  			@json_array.push(json_device)
 			  		else
 			  			message_device = Device.new('', mac, '', dm_mac, time, signal)
-			  			@message_device_json = message_device.to_json
+			  			json_device = message_device.to_json
+			  			@json_array.push(json_device)
 			  		end
 			  		if !message_device
 			  			puts "Query Error"
@@ -88,6 +94,12 @@ while true
 			end
 			lastpos = f.tell #records the last read position in the file 
 			f.close #close the file
+
+			# Send the data obtained in a message to the queue
+			@json_array.each do |device|
+				@queue.send_message(device)
+				puts "Sent the message"
+			end
 		end
 	else
 		puts "There is nothing new in here"
