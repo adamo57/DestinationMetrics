@@ -7,7 +7,7 @@ require '../Pi/Connect.rb'
 results = @db.query("SELECT * FROM BESUCH")
 
 results.each do |row|
-  mac_addr = row['MAC_PREFIX']
+  mac_pre = row['MAC_PREFIX']
 
   #@db.query("ALTER TABLE BLACKLIST
   #ADD INDEX (BLACKLIST_DEVICE)
@@ -16,24 +16,24 @@ results.each do |row|
   @db.query("SET collation_connection = 'utf8_general_ci'")
   if @db.query("
     SELECT EXISTS( 
-            SELECT DEVICE_MAC
-            FROM VISITS 
-            WHERE DEVICE_MAC = '#{mac_addr}'
+            SELECT MAC_PREFIX
+            FROM BESUCH
+            WHERE MAC_PREFIX = '#{mac_pre}'
               AND TIMEDIFF(START_TIME, END_TIME) > 15
             HAVING COUNT(DISTINCT(VISIT_DATE)/7) = 1)"
   ) == 0  
-    blacklist(mac_addr)
+    blacklist(mac_pre)
     next
   elsif @db.query("
     SELECT EXISTS (
-              SELECT DEVICE_MAC
-              FROM VISITS
-              WHERE DEVICE_MAC = '#{mac_addr}' 
+              SELECT MAC_PREFIX
+              FROM BESUCH
+              WHERE MAC_PREFIX = '#{mac_pre}' 
               AND TIMEDIFF(START_TIME, END_TIME) < 3 
               HAVING COUNT(DISTINCT(VISIT_DATE)) = 3
                 AND FLOOR(COUNT(DISTINCT(VISIT_DATE))/7) > 1)
   ") == 0
-    blacklist(mac_addr)
+    blacklist(mac_pre)
     next
   else
     puts "This really isn't here at all..."

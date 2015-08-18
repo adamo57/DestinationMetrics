@@ -109,6 +109,7 @@ def filesize(testfile)
 	if File.exists?(testfile)
 		if File.zero?(testfile) != TRUE
 			ret = File.size(testfile)
+			puts "#{ret}"
 			return ret
 		else
 			puts "Error: File is empty"
