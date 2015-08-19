@@ -76,7 +76,7 @@ while true
 			  		end
 			  	else
 			  		visits_array.push(mac)
-			  		puts "#{mac} , #{visits_array.count}\n"
+			  		puts "#{mac} , #{visits_array.count}, #{signal}\n"
 			  		if get_device_manufacturer(mac) != ""
 			  			message_device = Device.new('', mac, dm_mac, time, signal)
 			  			json_device = message_device.to_json

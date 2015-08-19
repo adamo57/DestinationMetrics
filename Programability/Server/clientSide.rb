@@ -16,6 +16,8 @@ messages_arr.each do |raw|
   #Parse the message into a readable string
   data = JSON.parse(raw)
 
+  puts "DATA: #{data}"
+
   #Make a Device from the raw data and insert it to the VISITS table
   raw_device = Device.new(data["Device_ID"], data["MAC_Prefix"],data["Location_Name"], data["visit_time"], data["visit_db"])
 
@@ -23,9 +25,9 @@ messages_arr.each do |raw|
 
   @db.query("
     INSERT INTO VISITS 
-    (`VISIT_ID`, `DEVICE_MAC`, `MAC_MANUFACTURE`, `LOCATION_ID`, `VISIT_TIME`, `VISIT_DB`)
+    (`VISIT_ID`, `DEVICE_MAC`, `LOCATION_ID`, `VISIT_TIME`, `VISIT_DB`)
     VALUES
-    ('', '#{raw_device.device_id}', '#{raw_device.mac_prefix}', '#{raw_device.location_id}', '#{raw_device.visit_time}', '#{raw_device.visit_db}')
+    (#{raw_device.device_id}', '#{raw_device.mac_prefix}', '#{raw_device.location_id}', '#{raw_device.visit_time}', '#{raw_device.visit_db}')
             ")
   
   #Make a new Device of all of the elements that we have gotten from the JSON parsed SQS message

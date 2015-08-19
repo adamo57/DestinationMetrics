@@ -25,6 +25,6 @@ class Device
 	end
 
 	def to_json
-		{'Device_ID' => device_id, 'MAC_Prefix' => encrypt_addr(mac_prefix), 'Location_Name' => get_location_name(location_id), 'visit_time' => visit_time}.to_json
+		{'Device_ID' => device_id, 'MAC_Prefix' => encrypt_addr(mac_prefix), 'Location_Name' => get_location_name(location_id), 'visit_time' => visit_time, 'visit_db' => visit_db}.to_json
 	end
 end
