@@ -45,7 +45,7 @@ messages_arr.each do |raw|
     INSERT INTO BESUCH
     (DEVICE_ID, MAC_PREFIX, LOC_NAME, VISIT_DATE, START_TIME, END_TIME, COUNT, MIN_SIGNAL, MAX_SIGNAL)
     VALUES
-    ('#{clean_device.device_id}', '#{clean_device.mac_prefix}', '#{clean_device.location_id}', '#{visit_date}', '#{start_time}', '#{end_time}', '#{count}', '#{min_signal}', '#{clean.visit_db}')
+    ('#{clean_device.device_id}', '#{clean_device.mac_prefix}', '#{clean_device.location_id}', '#{visit_date}', '#{start_time}', '#{end_time}', '#{count}', '#{min_signal}', '#{clean_device.visit_db}')
     ON DUPLICATE KEY UPDATE
     END_TIME = GREATEST(END_TIME, VALUES(END_TIME)),
     START_TIME = LEAST(START_TIME, VALUES(START_TIME)),

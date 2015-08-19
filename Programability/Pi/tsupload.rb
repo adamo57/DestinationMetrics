@@ -45,7 +45,7 @@ while true
 			abort("Could not open the file") #kills program if there was an error opening the file
 		else
 			f.tell
-			f.seek(lastpos) #find the last position that the iterator was at in the file
+			f.seek(lastpos, IO::SEEK_SET) #find the last position that the iterator was at in the file
 			f.each do |line| #reads the file line by line, starting from the last position recorded
 			  if !f.eof?
 			  	month_date, year_time, mac, signal = line.split(',')
