@@ -2,6 +2,7 @@ require 'openssl'
 require 'digest/sha1'
 require 'open-uri'
 require 'json'
+require 'base64'
 
 class String
   def rchomp(sep = $/)
@@ -24,7 +25,6 @@ end
 
 def encrypt_addr(mac)
 	# create the cipher for encrypting
-	puts "#{mac}"
 	@cipher = OpenSSL::Cipher::Cipher.new("aes-256-cbc")
 	@cipher.encrypt
 
@@ -37,9 +37,9 @@ def encrypt_addr(mac)
 	@cipher.iv = iv
 
 	encrypted_MAC = @cipher.update("#{mac}") #Encrypt the MAC Addresses for some reason
-	encrypted_MAC.force_encoding('ISO-8859-1')
+	base_mac = Base64.encode64(encrypted_MAC)
 
-	return encrypted_MAC
+	return base_mac
 end
 
 def blacklist(addr)

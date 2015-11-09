@@ -5,6 +5,8 @@ require '../utils.rb'
 
 
 class Device
+
+	#Makes device attributes changable
 	attr_accessor :device_id, :mac_prefix, :location_id, :visit_time, :visit_db
 
 	def initialize(device_id, mac_prefix, location_id, visit_time, visit_db)
@@ -16,8 +18,7 @@ class Device
 	end
 
 	def show
-		puts "Instance method show invoked for 
-		#{self}"
+		puts "#{self}"
 	end
 
 	def to_s

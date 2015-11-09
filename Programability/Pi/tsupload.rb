@@ -11,7 +11,7 @@ require './Connect.rb'
 
 
 tsfile = '/var/www/tshark.log' # location of tshark dump file
-dm_mac_file = '/var/www/mac.log' # location of device mac address 
+dm_mac_file = '/var/www/mac.log' # location of device mac address
 nothingCount = 0
 lastpos = 0
 
@@ -83,7 +83,7 @@ while true
 			  			@json_array.push(json_device)
 			  		else
 			  			message_device = Device.new('', mac, '', dm_mac, time, signal)
-			  			json_device = message_device.to_json
+			  			json_device = message_device.to_json	
 			  			@json_array.push(json_device)
 			  		end
 			  		if !message_device
@@ -92,7 +92,7 @@ while true
 			  	end
 			  end
 			end
-			lastpos = f.tell #records the last read position in the file 
+			lastpos = f.tell #records the last read position in the file
 			f.close #close the file
 
 			# Send the data obtained in a message to the queue

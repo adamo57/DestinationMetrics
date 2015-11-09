@@ -18,8 +18,7 @@ results.each do |row|
     SELECT EXISTS( 
             SELECT MAC_PREFIX
             FROM BESUCH
-            WHERE MAC_PREFIX = '#{mac_pre}'
-              AND TIMEDIFF(START_TIME, END_TIME) > 15
+            WHERE TIMEDIFF(START_TIME, END_TIME) > 15
             HAVING COUNT(DISTINCT(VISIT_DATE)/7) = 1)"
   ) == 0  
     blacklist(mac_pre)
@@ -28,8 +27,7 @@ results.each do |row|
     SELECT EXISTS (
               SELECT MAC_PREFIX
               FROM BESUCH
-              WHERE MAC_PREFIX = '#{mac_pre}' 
-              AND TIMEDIFF(START_TIME, END_TIME) < 3 
+              WHERE TIMEDIFF(START_TIME, END_TIME) < 3 
               HAVING COUNT(DISTINCT(VISIT_DATE)) = 3
                 AND FLOOR(COUNT(DISTINCT(VISIT_DATE))/7) > 1)
   ") == 0

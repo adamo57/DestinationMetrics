@@ -23,19 +23,20 @@ messages_arr.each do |raw|
 
   puts "#{raw_device.show}"
 
+  @db.query("SET collation_connection = 'utf8_general_ci'")
+
   @db.query("
     INSERT INTO VISITS 
     (`VISIT_ID`, `DEVICE_MAC`, `LOCATION_ID`, `VISIT_TIME`, `VISIT_DB`)
     VALUES
-    (#{raw_device.device_id}', '#{raw_device.mac_prefix}', '#{raw_device.location_id}', '#{raw_device.visit_time}', '#{raw_device.visit_db}')
-            ")
+    ('', '#{raw_device.mac_prefix}', '#{raw_device.location_id}', '#{raw_device.visit_time}', '#{raw_device.visit_db}')")
   
   #Make a new Device of all of the elements that we have gotten from the JSON parsed SQS message
 
   clean_device = Device.new(data["Device_ID"], data["MAC_Prefix"],data["Location_Name"], data["visit_time"], data["visit_db"])
 
   #Break the visit_time down to get visit_date, start/end_time, and max/min_signal
-  visit_date, start_time = data["visit_time"].split(' ')
+  visit_date, start_time = clean_device.visit_time.split(' ')
 
   #Setting variables that will be later adjusted by MySQL
   count = 0
@@ -45,9 +46,9 @@ messages_arr.each do |raw|
   #Insert the clean data to the clean table
   @db.query("
     INSERT INTO BESUCH
-    (DEVICE_ID, MAC_PREFIX, LOC_NAME, VISIT_DATE, START_TIME, END_TIME, COUNT, MIN_SIGNAL, MAX_SIGNAL)
+    (BESUCH_ID, DEVICE_ID, MAC_PREFIX, LOC_NAME, VISIT_DATE, START_TIME, END_TIME, COUNT, MIN_SIGNAL, MAX_SIGNAL)
     VALUES
-    ('#{clean_device.device_id}', '#{clean_device.mac_prefix}', '#{clean_device.location_id}', '#{visit_date}', '#{start_time}', '#{end_time}', '#{count}', '#{min_signal}', '#{clean_device.visit_db}')
+    ('', '#{clean_device.device_id}', '#{clean_device.mac_prefix}', '#{clean_device.location_id}', '#{visit_date}', '#{start_time}', '#{end_time}', '#{count}', '#{min_signal}', '#{clean_device.visit_db}')
     ON DUPLICATE KEY UPDATE
     END_TIME = GREATEST(END_TIME, VALUES(END_TIME)),
     START_TIME = LEAST(START_TIME, VALUES(START_TIME)),
@@ -57,3 +58,20 @@ messages_arr.each do |raw|
   ")
   puts "INSERTING"
 end
+
+=begin
+DATA: {"Device_ID"=>"", "MAC_Prefix"=>"¢¶ç$V'Ï\u0091\ttÄs\vÁn8", "Location_Name"=>"Location not found", "visit_time"=>"\n2015-08-19 09:33:52", "visit_db"=>"-73\n"}
+¢¶ç$V'Ï  tÄs
+                   Án8
+Instance method show invoked for
+    Device ID: , MAC Prefix: o�@Z_����Jl�, Location Name: Location not found, Visit Time:
+2015-08-19 09:33:52, Signal: -73
+
+clientSide.rb:26:in `query': You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'Ï  tÄs
+                                                           Án8', 'Location not found', ' (Mysql2::Error)
+2015-08-19 09:33:52', '-73
+')' at line 4
+  from clientSide.rb:26:in `block in <main>'
+  from clientSide.rb:15:in `each'
+  from clientSide.rb:15:in `<main>'
+=end
